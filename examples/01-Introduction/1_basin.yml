@@ -118,17 +118,11 @@ forcings:
   - nldas
 
 dynamic_inputs:
-  - PRCP(mm/day)_nldas
-  - PRCP(mm/day)_maurer
-  - prcp(mm/day)_daymet
-  - srad(W/m2)_daymet
-  - tmax(C)_daymet
-  - tmin(C)_daymet
-  - vp(Pa)_daymet
+  - surface_pressure_mean
 
 # which columns to use as target
 target_variables:
-  - QObs(mm/d)
+  - streamflow
 
 # clip negative predictions to zero for all variables listed below. Should be a list, even for single variables.
 clip_targets_to_zero:
