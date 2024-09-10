@@ -4,9 +4,9 @@
 experiment_name: test_run
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
-train_basin_file: 1_basin.txt
-validation_basin_file: 1_basin.txt
-test_basin_file: 1_basin.txt
+train_basin_file: ef_basins.txt
+validation_basin_file: ef_basins.txt
+test_basin_file: ef_basins.txt
 
 # training, validation and test time periods (format = 'dd/mm/yyyy')
 train_start_date: "01/10/1999"
@@ -17,7 +17,7 @@ test_start_date: "01/10/1989"
 test_end_date: "30/09/1999"
 
 # which GPU (id) to use [in format of cuda:0, cuda:1 etc, or cpu or None]
-device: cuda:0
+device: cpu
 
 # --- Validation configuration ---------------------------------------------------------------------
 
@@ -105,10 +105,10 @@ save_weights_every: 1
 # --- Data configurations --------------------------------------------------------------------------
 
 # which data set to use [camels_us, camels_gb, global, hourly_camels_us]
-dataset: camels_us
+dataset: caravan
 
 # Path to data set root
-data_dir: ../../data/CAMELS_US
+data_dir: ../../data/Caravan
 
 # Forcing product [daymet, maurer, maurer_extended, nldas, nldas_extended, nldas_hourly]
 # can be either a list of forcings or a single forcing product
@@ -118,18 +118,86 @@ forcings:
   - nldas
 
 dynamic_inputs:
-  - PRCP(mm/day)_nldas
-  - PRCP(mm/day)_maurer
-  - prcp(mm/day)_daymet
-  - srad(W/m2)_daymet
-  - tmax(C)_daymet
-  - tmin(C)_daymet
-  - vp(Pa)_daymet
+  - snow_depth_water_equivalent_mean
+  - surface_net_solar_radiation_mean
+  - surface_net_thermal_radiation_mean
+  - surface_pressure_mean
+  - temperature_2m_mean
+  - dewpoint_temperature_2m_mean
+  - u_component_of_wind_10m_mean
+  - v_component_of_wind_10m_mean
+  - volumetric_soil_water_layer_1_mean
+  - volumetric_soil_water_layer_2_mean
+  - volumetric_soil_water_layer_3_mean
+  - volumetric_soil_water_layer_4_mean
+  - snow_depth_water_equivalent_min
+  - surface_net_solar_radiation_min
+  - surface_net_thermal_radiation_min
+  - surface_pressure_min
+  - temperature_2m_min
+  - dewpoint_temperature_2m_min
+  - u_component_of_wind_10m_min
+  - v_component_of_wind_10m_min
+  - volumetric_soil_water_layer_1_min
+  - volumetric_soil_water_layer_2_min
+  - volumetric_soil_water_layer_3_min
+  - volumetric_soil_water_layer_4_min
+  - snow_depth_water_equivalent_max
+  - surface_net_solar_radiation_max
+  - surface_net_thermal_radiation_max
+  - surface_pressure_max
+  - temperature_2m_max
+  - dewpoint_temperature_2m_max
+  - u_component_of_wind_10m_max
+  - v_component_of_wind_10m_max
+  - volumetric_soil_water_layer_1_max
+  - volumetric_soil_water_layer_2_max
+  - volumetric_soil_water_layer_3_max
+  - volumetric_soil_water_layer_4_max
+  - total_precipitation_sum
+  - potential_evaporation_sum
+  - surface_net_solar_radiation_mean
+  - surface_net_thermal_radiation_mean
+  - surface_pressure_mean
+  - temperature_2m_mean
+  - dewpoint_temperature_2m_mean
+  - u_component_of_wind_10m_mean
+  - v_component_of_wind_10m_mean
+  - volumetric_soil_water_layer_1_mean
+  - volumetric_soil_water_layer_2_mean
+  - volumetric_soil_water_layer_3_mean
+  - volumetric_soil_water_layer_4_mean
+  - snow_depth_water_equivalent_min
+  - surface_net_solar_radiation_min
+  - surface_net_thermal_radiation_min
+  - surface_pressure_min
+  - temperature_2m_min
+  - dewpoint_temperature_2m_min
+  - u_component_of_wind_10m_min
+  - v_component_of_wind_10m_min
+  - volumetric_soil_water_layer_1_min
+  - volumetric_soil_water_layer_2_min
+  - volumetric_soil_water_layer_3_min
+  - volumetric_soil_water_layer_4_min
+  - snow_depth_water_equivalent_max
+  - surface_net_solar_radiation_max
+  - surface_net_thermal_radiation_max
+  - surface_pressure_max
+  - temperature_2m_max
+  - dewpoint_temperature_2m_max
+  - u_component_of_wind_10m_max
+  - v_component_of_wind_10m_max
+  - volumetric_soil_water_layer_1_max
+  - volumetric_soil_water_layer_2_max
+  - volumetric_soil_water_layer_3_max
+  - volumetric_soil_water_layer_4_max
+  - total_precipitation_sum
+  - potential_evaporation_sum
 
 # which columns to use as target
 target_variables:
-  - QObs(mm/d)
+  - streamflow
 
 # clip negative predictions to zero for all variables listed below. Should be a list, even for single variables.
 clip_targets_to_zero:
-  - QObs(mm/d)
+  - streamflow

@@ -11,8 +11,10 @@ import torch
 from neuralhydrology.evaluation import metrics
 from neuralhydrology.nh_run import start_run, eval_run
 
-if torch.cuda.is_available():
-    start_run(config_file=Path('1_basin.yml'))
-else:
-    start_run(config_file=Path('1_basin.yml'), gpu=-1)
+
+if __name__ == "__main__":
+    if torch.cuda.is_available():
+        start_run(config_file=Path('1_basin.yml'))
+    else:
+        start_run(config_file=Path('1_basin.yml'), gpu=-1)
 
