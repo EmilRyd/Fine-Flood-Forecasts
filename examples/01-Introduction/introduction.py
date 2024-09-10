@@ -11,12 +11,12 @@ import torch
 from neuralhydrology.evaluation import metrics
 from neuralhydrology.nh_run import start_run, eval_run
 
-'''if torch.cuda.is_available():
-    start_run(config_file=Path('1_basin.yml'))
-else:
-    start_run(config_file=Path('1_basin.yml'), gpu=-1)'''
-run_dir = Path("runs/test_run_0909_175125")
-eval_run(run_dir=run_dir, period="test")
+
+if __name__ == "__main__":
+    if torch.cuda.is_available():
+        start_run(config_file=Path('1_basin.yml'))
+    else:
+        start_run(config_file=Path('1_basin.yml'), gpu=-1)
 
 with open(run_dir / "test" / "model_epoch050" / "test_results.p", "rb") as fp:
     results = pickle.load(fp)
