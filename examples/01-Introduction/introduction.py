@@ -18,23 +18,5 @@ if __name__ == "__main__":
     else:
         start_run(config_file=Path('1_basin.yml'), gpu=-1)
 
-with open(run_dir / "test" / "model_epoch050" / "test_results.p", "rb") as fp:
-    results = pickle.load(fp)
 
-print(results.keys())
 
-# extract observations and simulations
-qobs = results['camels_03237500']['1D']['xr']['streamflow_obs']
-qsim = results['camels_03237500']['1D']['xr']['streamflow_sim']
-
-fig, ax = plt.subplots(figsize=(16,10))
-ax.plot(qobs['date'], qobs)
-ax.plot(qsim['date'], qsim)
-ax.set_ylabel("Discharge (mm/d)")
-ax.set_title(f"Test period - NSE {results['camels_03237500']['1D']['NSE']:.3f}")
-
-values = metrics.calculate_all_metrics(qobs.isel(time_step=-1), qsim.isel(time_step=-1))
-for key, val in values.items():
-    print(f"{key}: {val:.3f}")
-
-plt.close('all')
