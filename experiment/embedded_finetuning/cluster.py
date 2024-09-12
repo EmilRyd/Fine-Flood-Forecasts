@@ -21,7 +21,7 @@ cudalstm_config = Config(config_file)
 cuda_lstm = CudaLSTM(cfg=cudalstm_config)
 
 # load the trained weights into the new model
-model_path = run_dir / 'model_epoch030. pt'
+model_path = run_dir / 'model_epoch016. pt'
 model_weights = torch.load(str(model_path), map_location='cuda:0') # load the weights
 cuda_lstm.load_state_dict(model_weights) # set the new mdoel's weights
 
