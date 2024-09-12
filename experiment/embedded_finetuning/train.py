@@ -3,10 +3,8 @@ Code to train a model using an embedding layer on static attributes on the Carav
 """
 import sys
 from pathlib import Path
-
 sys.path.append(str(Path(__file__).parent.parent.parent))
-
-
+sys.path.append(str(Path(__file__).parent))
 import pickle
 
 import matplotlib.pyplot as plt
@@ -21,10 +19,11 @@ def train_model():
     """
 
     # train model using config file, using cuda-enabled gpu if available
+    
     if torch.cuda.is_available():
-        start_run(config_file=Path('ef_config.yml'))
+        start_run(config_file='ef_config.yml')
     else:
-        start_run(config_file=Path('ef_config.yml'), gpu=-1)
+        start_run(config_file='ef_config.yml', gpu=-1)
 
 from consts import AVAILABLE_FEATURES
 if __name__ == '__main__':
