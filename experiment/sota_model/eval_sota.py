@@ -4,9 +4,9 @@ import pandas as pd
 import pickle as pkl
 import glob
 import os
-
+from evaluate import start_evaluation
 # path to eval data
-test_path = Path(__file__).parent / 'runs' / 'embedding_experiment_1609_103917' / 'test' / 'model_epoch030' / 'test_metrics.csv'
+test_path = Path(__file__).parent / 'runs' / 'sota' / 'test' / 'model_epoch030' / 'test_metrics.csv'
 
 # read csv
 df = pd.read_csv(test_path)
@@ -21,13 +21,9 @@ hess_path = Path(__file__).parent.parent.parent / 'data' / 'hess_model' / 'cudal
 file_dirs = glob.glob(str(hess_path))
 
 for path in file_dirs:
-    file_path = os.path.join(path,  'test', 'model_epoch030', 'test_results.pkl')
+    start_evaluation()
     
-    # read pickle file, read_pickle() not working, possibly due to incompatibility with versions
-    df = pd.read_pickle(file_path)
-    with open(file_path, 'r') as f:
-        data = pkl.load(f)
-        df = pd.DataFrame(data)
+    
 
 
     # average acroos the columns
