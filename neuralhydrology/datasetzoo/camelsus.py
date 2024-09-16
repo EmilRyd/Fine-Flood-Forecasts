@@ -142,7 +142,6 @@ def load_camels_us_attributes(data_dir: Path, basins: List[str] = []) -> pd.Data
 
     return df
 
-
 def load_camels_us_forcings(data_dir: Path, basin: str, forcings: str) -> Tuple[pd.DataFrame, int]:
     """Load the forcing data for a basin of the CAMELS US data set.
 
@@ -182,6 +181,21 @@ def load_camels_us_forcings(data_dir: Path, basin: str, forcings: str) -> Tuple[
         area = int(fp.readline())
         # load the dataframe from the rest of the stream
         df = pd.read_csv(fp, sep='\s+')
+
+        # clean the data for the specific maurer sites that are missing it
+        if not ('Year' in df.columns):
+            df = df.reset_index(names=['Year', 'Mnth', 'Day', 'Hr'])
+
+            # renaming dictionary
+            renaming_dict = {'dayl(s)': 'Dayl(s)', 
+                        'prcp(mm/day)': 'PRCP(mm/day)',
+                    'srad(W/m2)': 'SRAD(W/m2)',
+                    'swe(mm)': 'SWE(mm)',
+                        'tmax(C)': 'Tmax(C)',
+                        'tmin(C)': 'Tmin(C)',
+                        'vp(Pa)': 'Vp(Pa)'}
+            df = df.rename(columns=renaming_dict)
+        
         df["date"] = pd.to_datetime(df.Year.map(str) + "/" + df.Mnth.map(str) + "/" + df.Day.map(str),
                                     format="%Y/%m/%d")
         df = df.set_index("date")
