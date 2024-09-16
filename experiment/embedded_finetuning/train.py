@@ -4,7 +4,6 @@ Code to train a model using an embedding layer on static attributes on the Carav
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
-sys.path.append(str(Path(__file__).parent))
 import pickle
 
 import matplotlib.pyplot as plt
