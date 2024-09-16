@@ -199,7 +199,6 @@ class BaseDataset(Dataset):
         if self.id_to_int:
             sample['x_one_hot'] = torch.nn.functional.one_hot(torch.tensor(self.id_to_int[basin]),
                                                               num_classes=len(self.id_to_int)).to(torch.float32)
-
         return sample
 
     def _load_basin_data(self, basin: str) -> pd.DataFrame:
