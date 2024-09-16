@@ -24,8 +24,8 @@ for path in file_dirs:
     file_path = os.path.join(path,  'test', 'model_epoch030', 'test_results.pkl')
     
     # read pickle file, read_pickle() not working, possibly due to incompatibility with versions
-    df = pd.compat.pickle_compat(file_path)
-    with open(file_path, 'rb') as f:
+    df = pd.read_pickle(file_path)
+    with open(file_path, 'r') as f:
         data = pkl.load(f)
         df = pd.DataFrame(data)
 
