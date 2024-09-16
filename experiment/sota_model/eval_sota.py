@@ -4,7 +4,8 @@ import pandas as pd
 import pickle as pkl
 import glob
 import os
-from evaluate import start_evaluation
+from neuralhydrology.nh_run import eval_run
+
 # path to eval data
 test_path = Path(__file__).parent / 'runs' / 'sota' / 'test' / 'model_epoch030' / 'test_metrics.csv'
 
@@ -17,13 +18,17 @@ medians = df.median()
 stds = df.std()
 
 # get values from all the hess model outputs and compare
-hess_path = Path(__file__).parent.parent.parent / 'data' / 'hess_model' / 'cudalstm_all_forcings_seed66401_3004_1400'
-file_dirs = glob.glob(str(hess_path))
+hess_path = Path(__file__).parent.parent.parent / 'data' / 'hess_model' / 'cudalstm_all_forcings_*'
+dirs = glob.glob(str(hess_path))
 
-for path in file_dirs:
-    start_evaluation()
-    
-    
+for path in dirs:
+   # evalute model from this file
+   eval_run(run_dir=Path(path), period='test')
+
+   with open(run_dir / 'test' / 'model_epoch030' / 'test_results.p', 'rb') as f:
+    data = pkl.load(f)
+
+    print(data.keys())
 
 
     # average acroos the columns
