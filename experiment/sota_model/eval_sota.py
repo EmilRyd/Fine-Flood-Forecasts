@@ -7,8 +7,10 @@ import os
 from neuralhydrology.nh_run import eval_run
 
 # path to eval data
-test_path = Path(__file__).parent / 'runs' / 'sota' / 'test' / 'model_epoch030' / 'test_metrics.csv'
+run_dir = Path(__file__).parent / 'runs' / 'sota_20'
+test_path = run_dir / 'test' / 'model_epoch030' / 'test_metrics.csv'
 
+eval_run(run_dir=run_dir, period='test', epoch=30)
 # read csv
 df = pd.read_csv(test_path)
 
@@ -16,25 +18,6 @@ df = pd.read_csv(test_path)
 aves = df.mean()
 medians = df.median()
 stds = df.std()
-
-# get values from all the hess model outputs and compare
-hess_path = Path(__file__).parent.parent.parent / 'data' / 'hess_model' / 'cudalstm_all_forcings_*'
-dirs = glob.glob(str(hess_path))
-
-for path in dirs:
-   # evalute model from this file
-   eval_run(run_dir=Path(path), period='test')
-
-   with open(run_dir / 'test' / 'model_epoch030' / 'test_results.p', 'rb') as f:
-    data = pkl.load(f)
-
-    print(data.keys())
-
-
-    # average acroos the columns
-    aves = df.mean()
-    medians = df.median()
-    stds = df.std()
-
-    print(aves)
-
+print(aves)
+print(medians)
+print(stds)
