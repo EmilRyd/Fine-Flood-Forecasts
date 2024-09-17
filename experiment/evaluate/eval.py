@@ -9,7 +9,7 @@ from neuralhydrology.nh_run import eval_run
 import matplotlib.pyplot as plt
 import numpy as np
 from experiment.trainedmodel import TrainedModel
-
+from experiment.trained_models import ALL_MODELS
 # Display the DataFrame with HTML rendering
 from IPython.core.display import display, HTML
 
@@ -108,15 +108,8 @@ def evaluate_models(models: list):
 if __name__ == '__main__':
     # run evaluations for all the trained models you wish to evaluate
 
-    # models of interest
-    emb_model_20 = TrainedModel(name='emb_model_20', config_id='embedding_experiment_20', experiment='embedding_model')
-    emb_model_10 = TrainedModel(name='emb_model_10', config_id='embedding_experiment_10', experiment='embedding_model')
-    sota_model_10 = TrainedModel(name='sota_model_10', config_id='sota', experiment='sota_model_10')
-    sota_model_20 = TrainedModel(name='sota_model_20', config_id='sota', experiment='sota_model_20')
-
-    models = [emb_model_10, emb_model_20, sota_model_10, sota_model_20]
-
-    df = evaluate_models(models)
+    
+    df = evaluate_models(ALL_MODELS)
     
     # display the df
     display(HTML(df.to_html(escape=False)))

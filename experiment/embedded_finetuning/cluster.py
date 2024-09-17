@@ -11,8 +11,8 @@ from neuralhydrology.datasetzoo import get_dataset, camelsus
 from neuralhydrology.datautils.utils import load_scaler
 
 from neuralhydrology.nh_run import start_run
-from experiment.exp_utils import load_cuda_model, turn_cuda_into_custom
-
+from experiment.experiment_utils import load_cuda_model, turn_cuda_into_custom
+from experiment.trained_models import EMB_MODEL_10
 
 """
 load_model(config_file, run_dir)
@@ -50,27 +50,25 @@ def get_embeddings(custom_stm, cfg, run_dir):
     print('helo')
 
 
-config_file = Path('ef_config.yml')
-
 # load trained cudalstm model
 # TODO figure out how where to pass these arguments
-run_dir = Path(__file__).parent / 'runs' / 'embedding_experiment_1609_112205'
+model = EMB_MODEL_10
 
 # get trained cuda model
-(cuda_model, cfg) = load_cuda_model(config_file=config_file, run_dir=run_dir, epoch=1)
+(cuda_model, cfg) = load_cuda_model(config_file=model.config_file, run_dir=model.run_dir, epoch=1)
 
 # turn it into a custom model
 custom_lstm = turn_cuda_into_custom(cuda_model, cfg)
 
 # get the embeddings from the model
-embeddings = get_embeddings(custom_lstm, cfg, run_dir)
+embeddings = get_embeddings(custom_lstm, cfg, model.run_dir)
 
 # cluster the embeddings using K-means algorithm
 
 # see how many clusters are good
 errors = []
 max_clusters = 20
-n_clusters = range(1,max_clusters):
+n_clusters = range(1,max_clusters)
 for i in n_clusters:
     kmeans = KMeans(n_clusters=i, random_state=0)
     emb_tensors = torch.stack(list(embeddings.values()))
@@ -94,8 +92,6 @@ def cluster(embeddings):
 
 
 
-# sanity check that weights are the same
-assert torch.allclose(cuda_lstm.lstm.bias_ih_l0, custom_lstm.cell.b_ih), 'Weights are not the same in CudaLSTM and CustomLSTM'
 
 # TODO cluster based on embedding outputs
 

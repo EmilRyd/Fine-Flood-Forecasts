@@ -2,7 +2,7 @@
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Any
-from experiment.exp_utils import get_epoch_string
+from experiment.experiment_utils import get_epoch_string
 
 @dataclass
 class TrainedModel:
@@ -13,6 +13,7 @@ class TrainedModel:
     epoch: int = 30
     _run_dir: Path = None
     _metrics_file: Path = None
+    _config_file: Path = None
 
     @property
     def run_dir(self):
@@ -24,3 +25,7 @@ class TrainedModel:
         return (Path(__file__).parent / self.experiment / 'runs' / self.config_id
         / 'test' / f'model_epoch{epoch_string}' / 'test_metrics.csv')
 
+    @property
+    def config_file(self):
+        return Path(__file__).parent / self.experiment / 'runs' / self.config_id / 'config.yml'
+        
