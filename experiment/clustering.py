@@ -21,7 +21,8 @@ generate_clusters(embeddings)
 return clusters
 """
 
-embeddding_file_path = Path(__file__).parent / 'embeddings.pth'
+output_dir = Path(__file__) / '..' / 'outputs'
+embeddding_file_path = output_dir / 'embeddings.pth'
 
 def get_embeddings(custom_lstm, cfg, run_dir):
 
@@ -71,8 +72,6 @@ def investigate_clusters(embeddings, max_clusters=50):
     plt.plot(n_clusters, errors)
     plt.show()
 
-
-
 def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool = True, method=KMeans) -> Path:
     
     # get trained cuda model
@@ -93,9 +92,8 @@ def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool 
     labels = fitted_cluster.labels_
 
     # write clusters to txt files
-    cluster_dir = f'{model.name}_{method}_{len(np.unique(labels))}'
+    cluster_dir = os.path.join(output_dir, f'{model.name}_{method}_{len(np.unique(labels))}')
 
-    # TODO identify where these dirs should be a nd how they should be named
     if not os.path.exists(cluster_dir):
         os.mkdir(cluster_dir)
     for label in np.unique(labels):

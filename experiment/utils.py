@@ -5,17 +5,9 @@ from neuralhydrology.modelzoo.customlstm import CustomLSTM
 from neuralhydrology.utils.config import Config
 from pathlib import Path
 from datetime import timedelta
-from dataclasses import dataclass
-
 
 """Constants"""
 NUM_BASINS = 531
-EMB_MODEL_20 = TrainedModel(name='emb_model_20', config_id='embedding_experiment_20', experiment='embedding_model')
-EMB_MODEL_10 = TrainedModel(name='emb_model_10', config_id='embedding_experiment_10', experiment='embedding_model')
-SOTA_MODEL_10 = TrainedModel(name='sota_model_10', config_id='sota_10', experiment='sota_model')
-SOTA_MODEL_20 = TrainedModel(name='sota_model_20', config_id='sota_20', experiment='sota_model')
-
-ALL_MODELS = [EMB_MODEL_20, EMB_MODEL_10, SOTA_MODEL_10, SOTA_MODEL_20]
 
 """Functions"""
 
@@ -63,28 +55,24 @@ def write_list_to_txt(list_to_write: list, path: str):
     
 """Classes"""
 
-@dataclass
 class TrainedModel:
-    
-    name: str
-    config_id: str
-    experiment: str
-    epoch: int = 30
-    _run_dir: Path = None
-    _metrics_file: Path = None
-    _config_file: Path = None
 
-    @property
-    def run_dir(self):
-        return Path(__file__).parent / self.experiment / 'runs' / self.config_id
+    def __init__(self, config_file_path: Path=None, experiment_name: str = None):
+
+        assert (config_file_path or experiment_name), 'neither experiment name nor config file path was provided'
+        if config_file_path:
+            self.cfg_path = config_file_path
+        else:
+            self.cfg_path = self.get_cfg_path(experiment_name)
         
-    @property
-    def metrics_file(self):
+        self.cfg = Config(self.cfg_path)
+        self.config_id = self.cfg.experiment_name
+        self.epoch = self.cfg.epochs
+        self.run_dir = Path(__file__).parent / 'models' / 'runs' / self.config_id
+        
         epoch_string = get_epoch_string(self.epoch)
-        return (Path(__file__).parent / self.experiment / 'runs' / self.config_id
+        self.metrics_file = (self.run_dir / self.config_id
         / 'test' / f'model_epoch{epoch_string}' / 'test_metrics.csv')
 
-    @property
-    def config_file(self):
-        return Path(__file__).parent / self.experiment / 'runs' / self.config_id / 'config.yml'
-        
+    def get_cfg_path(experiment_name: str) -> Path:
+        return Path(__file__).parent / 'models' / 'runs' / experiment_name / 'config.yml'
