@@ -26,6 +26,7 @@ metric_goals = {
     'FMS (median)': 0,
     'Peak-Timing (median)': 0
 }
+eval_dir = Path(__file__).parent / 'outputs' / 'evals'
 
 def bold_better(row):
 
@@ -101,16 +102,12 @@ def evaluate_models(models: list):
         
     # evalauate the model csvs
     df = evalute_model_csvs(models_dict)
-    return df
-    
-    
 
-if __name__ == '__main__':
-    # run evaluations for all the trained models you wish to evaluate
-
-    
-    df = evaluate_models(ALL_MODELS)
-    
-    # display the df
+    # write the evaluated df to disk
+    # TODO generate unique eval ids for different model evals
+    df.to_csv(os.path.join(eval_dir, 'eval.csv'))
     display(HTML(df.to_html(escape=False)))
+
+    return df
+
 

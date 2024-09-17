@@ -99,5 +99,8 @@ def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool 
     for label in np.unique(labels):
         basin_cluster = [val for idx, val in enumerate(embeddings.keys()) if (labels[idx] == label)]
         write_list_to_txt(basin_cluster, os.path.join(cluster_dir, f'{label}.txt'))
+    
+    # store path to clusters to return
+    path = Path(cluster_dir)
 
-    return Path(cluster_dir)
+    return path

@@ -1,17 +1,25 @@
 
 from pathlib import Path
 import torch
-from neuralhydrology.nh_run import start_run
-from experiment.utils import get_trained_model_object
+from neuralhydrology.nh_run import start_run, start_training
+from experiment.utils import TrainedModel
 
-def train_model(config_file_path: Path):
+def train_model(config_file_path: Path) -> TrainedModel:
     if torch.cuda.is_available():
         start_run(config_file_path=config_file_path)
     else:
         start_run(config_file_path=config_file_path, gpu=-1)
 
     # construct TrainedModel object
-    trained_model = get_trained_model_object(config_file_path)
+    trained_model = TrainedModel(config_file_path=config_file_path)
+
     return trained_model
 
+def train_models(config_paths: list) -> list:
+    
+    models = []
+    for config_path in config_paths:
+        trained_model = train_model(config_path)
+        models.append(trained_model)
 
+    return models

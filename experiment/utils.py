@@ -5,6 +5,9 @@ from neuralhydrology.modelzoo.customlstm import CustomLSTM
 from neuralhydrology.utils.config import Config
 from pathlib import Path
 from datetime import timedelta
+from typing import Union
+import os
+from enum import StrEnum
 
 """Constants"""
 NUM_BASINS = 531
@@ -52,18 +55,43 @@ def collapse_test_period(cfg: Config) -> Config:
 def write_list_to_txt(list_to_write: list, path: str):
     with open(path, 'w') as f:
         f.writelines(f'{item}\n' for item in list_to_write)
+
+def get_cluster_config(base_config: Config, cluster: int) -> Config:
+    cluster_file = cluster_dir / f'{cluster}'
+    assert os.path.exists(cluster_file), f'Cluster basin list file {cluster_file} does not exist!'
+    cluster_config = base_config
+    cluster_config.experiment_name = cluster_config.experiment_name + 'cluster' + cluster
+    cluster_config.train_basin_file = cluster_file
+    cluster_config.test_basin_file = cluster_file
+    
+
+    return cluster_config
+
+def generate_cluster_configs(base_config: Config, cluster_dir: Path) -> list:
+
+    n_clusters = os.listdir(cluster_dir)
+    cluster_paths = []
+    for cluster in range(0, n_clusters):
+        cluster_config = get_cluster_config(base_config=base_config, cluster=cluster)
+        filename = f'{cluster}.yml'
+        cluster_config.dump_config(folder=cluster_dir, filename=filename)
+        cluster_path = cluster_dir / filename
+        cluster_paths.append(cluster_path)
+    return cluster_paths
+
     
 """Classes"""
 
 class TrainedModel:
 
-    def __init__(self, config_file_path: Path=None, experiment_name: str = None):
-
-        assert (config_file_path or experiment_name), 'neither experiment name nor config file path was provided'
-        if config_file_path:
-            self.cfg_path = config_file_path
+    def __init__(self, config_file_path_or_experiment_name: Union[Path, str]):
+        
+        if isinstance(config_file_path_or_experiment_name, Path):
+            self.cfg_path = config_file_path_or_experiment_name
+        elif isinstance(config_file_path_or_experiment_name, str):
+            self.cfg_path = self.get_cfg_path(config_file_path_or_experiment_name)
         else:
-            self.cfg_path = self.get_cfg_path(experiment_name)
+            raise ValueError(f'Cannot create a config from input of type {type(config_file_path_or_experiment_name)}.')
         
         self.cfg = Config(self.cfg_path)
         self.config_id = self.cfg.experiment_name
@@ -76,3 +104,10 @@ class TrainedModel:
 
     def get_cfg_path(experiment_name: str) -> Path:
         return Path(__file__).parent / 'models' / 'runs' / experiment_name / 'config.yml'
+
+
+class TrainedModelID(StrEnum):
+    EMB_20 = 'embedding_experiment_20'
+    EMB_10 = 'embedding_experiment_10'
+    SOTA_10 = 'sota_10'
+    SOTA_20 = 'sota_20'
