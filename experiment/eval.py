@@ -2,14 +2,10 @@
 
 from pathlib import Path
 import pandas as pd
-import pickle as pkl
-import glob
 import os
 from neuralhydrology.nh_run import eval_run
-import matplotlib.pyplot as plt
 import numpy as np
-from experiment.trainedmodel import TrainedModel
-from experiment.trained_models import ALL_MODELS
+from experiment.utils import TrainedModel
 # Display the DataFrame with HTML rendering
 from IPython.core.display import display, HTML
 
@@ -26,6 +22,7 @@ metric_goals = {
     'FMS (median)': 0,
     'Peak-Timing (median)': 0
 }
+assets_dir = Path(__file__).parent / 'assets'
 eval_dir = Path(__file__).parent / 'outputs' / 'evals'
 
 def bold_better(row):
@@ -74,7 +71,7 @@ def evalute_model_csvs(model_eval_files: dict, include_benchmark=True, bolden_va
 
     if include_benchmark:
         # read in benchmark
-        bm_df = pd.read_csv('benchmark.csv', dtype={'Benchmark': float})
+        bm_df = pd.read_csv(assets_dir / 'benchmark.csv', dtype={'Benchmark': float})
         comparison_df = pd.merge(left=comparison_df, right=bm_df, on='Metric')
 
     if bolden_values:
@@ -98,13 +95,12 @@ def evaluate_models(models: list):
         # if any models are not evaluted yet, do so
         if not os.path.exists(model.metrics_file):
             eval_run(model.run_dir, period='test', epoch=model.epoch)
-        models_dict[model.name] = model.metrics_file
+        models_dict[model.config_id] = model.metrics_file
         
     # evalauate the model csvs
     df = evalute_model_csvs(models_dict)
 
     # write the evaluated df to disk
-    # TODO generate unique eval ids for different model evals
     df.to_csv(os.path.join(eval_dir, 'eval.csv'))
     display(HTML(df.to_html(escape=False)))
 

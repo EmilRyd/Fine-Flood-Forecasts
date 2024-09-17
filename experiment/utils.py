@@ -7,16 +7,17 @@ from pathlib import Path
 from datetime import timedelta
 from typing import Union
 import os
-from enum import StrEnum
+from strenum import StrEnum
 
 """Constants"""
 NUM_BASINS = 531
 
 """Functions"""
 
-def load_cuda_model(config_file, run_dir, epoch=30) -> (CudaLSTM, Config):
+def load_cuda_model(config_file: Path, run_dir: Path, epoch: int =30) -> (CudaLSTM, Config):
 
     """Loads cuda model from config file and run directory, returns tuple of model and config object"""
+    
     # instantiate new cudalstm
     cudalstm_config = Config(config_file)
     cuda_lstm = CudaLSTM(cfg=cudalstm_config)
@@ -56,26 +57,29 @@ def write_list_to_txt(list_to_write: list, path: str):
     with open(path, 'w') as f:
         f.writelines(f'{item}\n' for item in list_to_write)
 
-def get_cluster_config(base_config: Config, cluster: int) -> Config:
-    cluster_file = cluster_dir / f'{cluster}'
+def get_cluster_config(base_config: Config, cluster: int, cluster_file: Path) -> Config:
     assert os.path.exists(cluster_file), f'Cluster basin list file {cluster_file} does not exist!'
-    cluster_config = base_config
-    cluster_config.experiment_name = cluster_config.experiment_name + 'cluster' + cluster
-    cluster_config.train_basin_file = cluster_file
-    cluster_config.test_basin_file = cluster_file
+    cluster_config_dict = base_config._cfg
+    cluster_config_dict['experiment_name'] = base_config.experiment_name + f'cluster{cluster}'
+    cluster_config_dict['train_basin_file'] = cluster_file
+    cluster_config_dict['test_basin_file'] = cluster_file
+    cluster_config = Config(cluster_config_dict)
     
 
     return cluster_config
 
 def generate_cluster_configs(base_config: Config, cluster_dir: Path) -> list:
 
-    n_clusters = os.listdir(cluster_dir)
+    n_clusters = len(os.listdir(cluster_dir))
     cluster_paths = []
-    for cluster in range(0, n_clusters):
-        cluster_config = get_cluster_config(base_config=base_config, cluster=cluster)
+    for cluster in range(0, n_clusters-1):
+        cluster_file = cluster_dir / f'{cluster}.txt'
+        # only if yml does not already exist
         filename = f'{cluster}.yml'
-        cluster_config.dump_config(folder=cluster_dir, filename=filename)
         cluster_path = cluster_dir / filename
+        if not os.path.exists(cluster_path):
+            cluster_config = get_cluster_config(base_config=base_config, cluster=cluster, cluster_file=cluster_file)     
+            cluster_config.dump_config(folder=cluster_dir, filename=filename)
         cluster_paths.append(cluster_path)
     return cluster_paths
 
@@ -89,7 +93,7 @@ class TrainedModel:
         if isinstance(config_file_path_or_experiment_name, Path):
             self.cfg_path = config_file_path_or_experiment_name
         elif isinstance(config_file_path_or_experiment_name, str):
-            self.cfg_path = self.get_cfg_path(config_file_path_or_experiment_name)
+            self.cfg_path = self.get_cfg_path(experiment_name=config_file_path_or_experiment_name)
         else:
             raise ValueError(f'Cannot create a config from input of type {type(config_file_path_or_experiment_name)}.')
         
@@ -99,10 +103,10 @@ class TrainedModel:
         self.run_dir = Path(__file__).parent / 'models' / 'runs' / self.config_id
         
         epoch_string = get_epoch_string(self.epoch)
-        self.metrics_file = (self.run_dir / self.config_id
+        self.metrics_file = (self.run_dir
         / 'test' / f'model_epoch{epoch_string}' / 'test_metrics.csv')
 
-    def get_cfg_path(experiment_name: str) -> Path:
+    def get_cfg_path(self, experiment_name: str) -> Path:
         return Path(__file__).parent / 'models' / 'runs' / experiment_name / 'config.yml'
 
 

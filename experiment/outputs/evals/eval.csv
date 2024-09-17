@@ -1,0 +1,11 @@
+,Metric,embedding_experiment_20,Benchmark
+0,NSE (mean),0.76,<b>0.76</b>
+1,NSE (median),0.8,<b>0.8</b>
+2,KGE (median),0.79,<b>0.8</b>
+3,Alpha-NSE (median),0.86,<b>0.88</b>
+4,Beta-NSE (median),-0.04,<b>-0.02</b>
+5,Pearson-r (median),<b>0.9</b>,0.9
+6,FHV (median),-13.65,<b>-11.91</b>
+7,FMS (median),<b>-5.03</b>,-6.69
+8,FLV (median),-2.7,<b>2.57</b>
+9,Peak-Timing (median),<b>0.26</b>,0.41

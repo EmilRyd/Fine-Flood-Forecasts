@@ -11,7 +11,6 @@ from neuralhydrology.datautils.utils import load_scaler
 import os
 
 from experiment.utils import load_cuda_model, turn_cuda_into_custom, NUM_BASINS, write_list_to_txt, TrainedModel
-from experiment.trained_models import EMB_MODEL_10
 
 """
 load_model(config_file, run_dir)
@@ -21,7 +20,7 @@ generate_clusters(embeddings)
 return clusters
 """
 
-output_dir = Path(__file__) / '..' / 'outputs'
+output_dir = Path(__file__).parent / 'outputs'
 embeddding_file_path = output_dir / 'embeddings.pth'
 
 def get_embeddings(custom_lstm, cfg, run_dir):
@@ -53,7 +52,7 @@ def get_embeddings(custom_lstm, cfg, run_dir):
 
 
 # cluster the embeddings using K-means algorithm as default
-def cluster(embeddings, n_clusters=10, method=KMeans):
+def cluster(embeddings, n_clusters=1, method=KMeans):
     
     method_n = method(n_clusters=n_clusters, random_state=0)
     emb_tensors = torch.stack(list(embeddings.values()))
@@ -75,7 +74,7 @@ def investigate_clusters(embeddings, max_clusters=50):
 def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool = True, method=KMeans) -> Path:
     
     # get trained cuda model
-    (cuda_model, cfg) = load_cuda_model(config_file=model.config_file, run_dir=model.run_dir)
+    (cuda_model, cfg) = load_cuda_model(config_file=model.cfg_path, run_dir=model.run_dir)
 
     # turn it into a custom model
     custom_lstm = turn_cuda_into_custom(cuda_model, cfg)
@@ -92,15 +91,22 @@ def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool 
     labels = fitted_cluster.labels_
 
     # write clusters to txt files
-    cluster_dir = os.path.join(output_dir, f'{model.name}_{method}_{len(np.unique(labels))}')
+    # TODO incorporate the clustering method in the folder naming
+    cluster_dir = os.path.join(output_dir, 'clusters', f'{model.config_id}_{len(np.unique(labels))}')
 
-    if not os.path.exists(cluster_dir):
-        os.mkdir(cluster_dir)
+    # store path to clusters to return
+    path = Path(cluster_dir)
+
+    if os.path.exists(cluster_dir):
+        # assume that if directory exists then clustering has happened
+        return path
+    os.mkdir(cluster_dir)
+    
+
     for label in np.unique(labels):
         basin_cluster = [val for idx, val in enumerate(embeddings.keys()) if (labels[idx] == label)]
         write_list_to_txt(basin_cluster, os.path.join(cluster_dir, f'{label}.txt'))
     
-    # store path to clusters to return
-    path = Path(cluster_dir)
+    
 
     return path

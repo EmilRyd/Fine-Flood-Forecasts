@@ -32,7 +32,7 @@ def main(model: TrainedModel = None, config_file_path: Path = None):
     cluster_dir = generate_clusters_in_embedding_space(model=model)
 
     # generate new config files
-    cluster_config_paths = generate_cluster_configs(cfg=model.cfg, cluster_dir=cluster_dir)
+    cluster_config_paths = generate_cluster_configs(base_config=model.cfg, cluster_dir=cluster_dir)
 
     # train the new models
     clustered_models = train_models(cluster_config_paths)
@@ -42,7 +42,6 @@ def main(model: TrainedModel = None, config_file_path: Path = None):
 
 
 if __name__ == '__main__':
-    
-
-   model = TrainedModel(TrainedModelID.EMB_20)
+   # perform clustering experiment on a given mode
+   model = TrainedModel(TrainedModelID.EMB_20.value)
    main(model=model)

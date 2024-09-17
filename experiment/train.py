@@ -6,9 +6,9 @@ from experiment.utils import TrainedModel
 
 def train_model(config_file_path: Path) -> TrainedModel:
     if torch.cuda.is_available():
-        start_run(config_file_path=config_file_path)
+        start_run(config_file=config_file_path)
     else:
-        start_run(config_file_path=config_file_path, gpu=-1)
+        start_run(config_file=config_file_path, gpu=-1)
 
     # construct TrainedModel object
     trained_model = TrainedModel(config_file_path=config_file_path)
