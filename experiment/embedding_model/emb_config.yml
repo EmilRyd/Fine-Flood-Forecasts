@@ -35,6 +35,16 @@ metrics:
   - KGE
   - Alpha-NSE
   - Beta-NSE
+  - MSE
+  - RMSE
+  - Pearson-r
+  - Beta-KGE
+  - FHV
+  - FMS
+  - FLV
+  - Peak-Timing
+  - Missed-Peaks
+  - Peak-MAPE
 
 # --- Model configuration --------------------------------------------------------------------------
 
@@ -65,8 +75,6 @@ statics_embedding:
   # dropout applied to embedding network
   dropout: 0.0
 
-
-
 # ----> General settings <----
 
 # Number of cell states of the LSTM
@@ -94,7 +102,7 @@ regularization:
 # specify learning rates to use starting at specific epochs (0 is the initial learning rate)
 learning_rate:
   0: 1e-3
-  10: 5e-4
+  20: 5e-4
   25: 1e-4
 
 # Mini-batch size
@@ -131,7 +139,7 @@ predict_last_n: 1
 seq_length: 365
 
 # Number of parallel workers used in the data pipeline
-num_workers: 8
+num_workers: 16
 
 # Log the training loss every n steps
 log_interval: 5

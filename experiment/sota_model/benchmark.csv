@@ -1,0 +1,11 @@
+Metric,Benchmark
+NSE (median),0.8
+NSE (mean),0.76
+KGE (median),0.8
+Pearson-r (median),0.9
+Alpha-NSE (median),0.88
+Beta-NSE (median),-0.02
+FHV (median),-11.91
+FLV (median),2.57
+FMS (median),-6.69
+Peak-Timing (median),0.41
