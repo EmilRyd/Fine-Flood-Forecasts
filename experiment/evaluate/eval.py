@@ -8,6 +8,7 @@ import os
 from neuralhydrology.nh_run import eval_run
 import matplotlib.pyplot as plt
 import numpy as np
+from experiment.trainedmodel import TrainedModel
 
 # Display the DataFrame with HTML rendering
 from IPython.core.display import display, HTML
@@ -42,7 +43,7 @@ def bold_better(row):
     return new_row
 
 
-def evalute_models(model_eval_files: dict, include_benchmark=True, bolden_values=True):
+def evalute_model_csvs(model_eval_files: dict, include_benchmark=True, bolden_values=True):
     """takes in a dict of model_name: eval_csvs pairs and generates a table comparing their metrics"""
 
     comparison_df = pd.DataFrame()
@@ -86,11 +87,37 @@ def evalute_models(model_eval_files: dict, include_benchmark=True, bolden_values
 
 
 
-def main():
-    models = {'emb_model': Path(__file__).parent / 'embedding_model' / 'runs' / 'embedding_experiment' / 'test' / 'model_epoch030' / 'test_metrics.csv',
-              'sota_model': Path(__file__).parent / 'sota_model' / 'runs' / 'sota_20' / 'test' / 'model_epoch030' / 'test_metrics.csv'}
-    df = evalute_models(models)
+def evaluate_models(models: list):
+    """Takes list of TrainedModel objects and evalutes them against each other"""
+    models_dict = {}
+    for model in models:
+        
+        assert isinstance(model, TrainedModel), 'model is not a TrainedModel data object'
+
+        # if any models are not evaluted yet, do so
+        if not os.path.exists(model.metrics_file):
+            eval_run(model.run_dir, period='test', epoch=model.epoch)
+        models_dict[model.name] = model.metrics_file
+        
+    # evalauate the model csvs
+    df = evalute_model_csvs(models_dict)
+    return df
+    
+    
+
+if __name__ == '__main__':
+    # run evaluations for all the trained models you wish to evaluate
+
+    # models of interest
+    emb_model_20 = TrainedModel(name='emb_model_20', config_id='embedding_experiment_20', experiment='embedding_model')
+    emb_model_10 = TrainedModel(name='emb_model_10', config_id='embedding_experiment_10', experiment='embedding_model')
+    sota_model_10 = TrainedModel(name='sota_model_10', config_id='sota', experiment='sota_model_10')
+    sota_model_20 = TrainedModel(name='sota_model_20', config_id='sota', experiment='sota_model_20')
+
+    models = [emb_model_10, emb_model_20, sota_model_10, sota_model_20]
+
+    df = evaluate_models(models)
+    
+    # display the df
     display(HTML(df.to_html(escape=False)))
 
-
-main()

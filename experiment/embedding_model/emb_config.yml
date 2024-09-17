@@ -1,7 +1,7 @@
 # --- Experiment configurations --------------------------------------------------------------------
 
 # experiment name, used as folder name
-experiment_name: embedding_experiment
+experiment_name: embedding_experiment_10
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
 train_basin_file: 531_basins.txt
@@ -102,7 +102,7 @@ regularization:
 # specify learning rates to use starting at specific epochs (0 is the initial learning rate)
 learning_rate:
   0: 1e-3
-  20: 5e-4
+  10: 5e-4
   25: 1e-4
 
 # Mini-batch size

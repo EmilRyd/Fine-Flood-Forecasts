@@ -13,10 +13,8 @@ def load_cuda_model(config_file, run_dir, epoch=30) -> (CudaLSTM, Config):
     cudalstm_config = Config(config_file)
     cuda_lstm = CudaLSTM(cfg=cudalstm_config)
 
-    # load the trained weights into the new model
-    epoch_string = str(epoch)
-    while len(epoch_string) < 3:
-        epoch_string = '0' + epoch_string
+    epoch_string = get_epoch_string(epoch)
+    
     model_path = run_dir / f'model_epoch{epoch_string}.pt'
     model_weights = torch.load(str(model_path), map_location='cpu') # load the weights
     cuda_lstm.load_state_dict(model_weights) # set the new mdoel's weights
@@ -31,3 +29,10 @@ def turn_cuda_into_custom(cuda_lstm, cfg) -> CustomLSTM:
     custom_lstm.copy_weights(cuda_lstm)
     
     return custom_lstm
+
+def get_epoch_string(epoch: int):
+    # load the trained weights into the new model
+    epoch_string = str(epoch)
+    while len(epoch_string) < 3:
+        epoch_string = '0' + epoch_string
+    return epoch_string
