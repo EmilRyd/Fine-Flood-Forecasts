@@ -11,7 +11,7 @@ def train_model(config_file_path: Path) -> TrainedModel:
         start_run(config_file=config_file_path, gpu=-1)
 
     # construct TrainedModel object
-    trained_model = TrainedModel(config_file_path=config_file_path)
+    trained_model = TrainedModel(config_file_path_or_experiment_name=config_file_path)
 
     return trained_model
 

@@ -24,7 +24,7 @@ dynamic_inputs:
 - tmax(C)_daymet
 - tmin(C)_daymet
 - vp(Pa)_daymet
-epochs: 30
+epochs: 1
 evolving_attributes:
 experiment_name: embedding_experiment_20cluster0
 forcings:
@@ -67,7 +67,7 @@ output_dropout: 0.4
 package_version: 1.11.0
 predict_last_n: 1
 regularization:
-run_dir: /home/admin/Fine-Flood-Forecasts/experiment/embedding_model/runs/embedding_experiment_1709_101107
+run_dir: /home/admin/Fine-Flood-Forecasts/experiment/models/runs
 save_weights_every: 1
 seed: 179515
 seq_length: 365

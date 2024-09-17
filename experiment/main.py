@@ -36,9 +36,11 @@ def main(model: TrainedModel = None, config_file_path: Path = None):
 
     # train the new models
     clustered_models = train_models(cluster_config_paths)
-
+    
+    all_models = list(set(clustered_models) + set(model))
+    
     # evaluate the separate models
-    evaluate_models(clustered_models)
+    evaluate_models(all_models)
 
 
 if __name__ == '__main__':

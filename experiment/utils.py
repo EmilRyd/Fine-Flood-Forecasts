@@ -63,6 +63,7 @@ def get_cluster_config(base_config: Config, cluster: int, cluster_file: Path) ->
     cluster_config_dict['experiment_name'] = base_config.experiment_name + f'cluster{cluster}'
     cluster_config_dict['train_basin_file'] = cluster_file
     cluster_config_dict['test_basin_file'] = cluster_file
+    cluster_config_dict['epochs'] = 1 # hack for quicker run through
     cluster_config = Config(cluster_config_dict)
     
 
@@ -70,9 +71,9 @@ def get_cluster_config(base_config: Config, cluster: int, cluster_file: Path) ->
 
 def generate_cluster_configs(base_config: Config, cluster_dir: Path) -> list:
 
-    n_clusters = len(os.listdir(cluster_dir))
+    n_clusters = sum(1 for file_ in os.listdir(cluster_dir) if file_.endswith('.txt'))
     cluster_paths = []
-    for cluster in range(0, n_clusters-1):
+    for cluster in range(0, n_clusters):
         cluster_file = cluster_dir / f'{cluster}.txt'
         # only if yml does not already exist
         filename = f'{cluster}.yml'

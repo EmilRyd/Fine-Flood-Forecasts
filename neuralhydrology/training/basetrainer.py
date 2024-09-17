@@ -363,13 +363,7 @@ class BaseTrainer(object):
 
         # create as new folder structure
         else:
-            now = datetime.now()
-            day = f"{now.day}".zfill(2)
-            month = f"{now.month}".zfill(2)
-            hour = f"{now.hour}".zfill(2)
-            minute = f"{now.minute}".zfill(2)
-            second = f"{now.second}".zfill(2)
-            run_name = f'{self.cfg.experiment_name}_{day}{month}_{hour}{minute}{second}'
+            run_name = f'{self.cfg.experiment_name}'
 
             # if no directory for the runs is specified, a 'runs' folder will be created in the current working dir
             if self.cfg.run_dir is None:
