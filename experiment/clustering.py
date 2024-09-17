@@ -10,7 +10,7 @@ from neuralhydrology.datasetzoo import get_dataset
 from neuralhydrology.datautils.utils import load_scaler
 import os
 
-from experiment.experiment_utils import load_cuda_model, turn_cuda_into_custom, NUM_BASINS, write_list_to_txt
+from experiment.utils import load_cuda_model, turn_cuda_into_custom, NUM_BASINS, write_list_to_txt, TrainedModel
 from experiment.trained_models import EMB_MODEL_10
 
 """
@@ -72,33 +72,34 @@ def investigate_clusters(embeddings, max_clusters=50):
     plt.show()
 
 
-# load trained cudalstm model
-# TODO figure out how where to pass these arguments
-model = EMB_MODEL_10
-investigate = True
-# get trained cuda model
-(cuda_model, cfg) = load_cuda_model(config_file=model.config_file, run_dir=model.run_dir)
 
-# turn it into a custom model
-custom_lstm = turn_cuda_into_custom(cuda_model, cfg)
+def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool = True, method=KMeans) -> Path:
+    
+    # get trained cuda model
+    (cuda_model, cfg) = load_cuda_model(config_file=model.config_file, run_dir=model.run_dir)
 
-# get the embeddings from the model
-embeddings = get_embeddings(custom_lstm, cfg, model.run_dir)
+    # turn it into a custom model
+    custom_lstm = turn_cuda_into_custom(cuda_model, cfg)
 
-if investigate:
-    investigate_clusters(embeddings=embeddings)
+    # get the embeddings from the model
+    embeddings = get_embeddings(custom_lstm, cfg, model.run_dir)
 
-# retreive clusters
-fitted_cluster = cluster(embeddings)
+    if investigate:
+        investigate_clusters(embeddings=embeddings)
 
-labels = fitted_cluster.labels_
-cluster_dir = f'clustered_basins_kmeans_{len(np.unique(labels))}'
+    # retreive clusters
+    fitted_cluster = cluster(embeddings, method=method)
 
-# TODO identify where these dirs should be a nd how they should be named
-if not os.path.exists(cluster_dir):
-    os.mkdir(cluster_dir)
-for label in np.unique(labels):
-    basin_cluster = [val for idx, val in enumerate(embeddings.keys()) if (labels[idx] == label)]
-    write_list_to_txt(basin_cluster, os.path.join(cluster_dir, f'{label}'))
+    labels = fitted_cluster.labels_
 
-os.path(cluster_dir)
+    # write clusters to txt files
+    cluster_dir = f'{model.name}_{method}_{len(np.unique(labels))}'
+
+    # TODO identify where these dirs should be a nd how they should be named
+    if not os.path.exists(cluster_dir):
+        os.mkdir(cluster_dir)
+    for label in np.unique(labels):
+        basin_cluster = [val for idx, val in enumerate(embeddings.keys()) if (labels[idx] == label)]
+        write_list_to_txt(basin_cluster, os.path.join(cluster_dir, f'{label}.txt'))
+
+    return Path(cluster_dir)
