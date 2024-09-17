@@ -3,8 +3,10 @@ import torch
 from neuralhydrology.modelzoo.cudalstm import CudaLSTM
 from neuralhydrology.modelzoo.customlstm import CustomLSTM
 from neuralhydrology.utils.config import Config
+from pathlib import Path
+from datetime import timedelta
 
-
+NUM_BASINS = 531
 
 def load_cuda_model(config_file, run_dir, epoch=30) -> (CudaLSTM, Config):
 
@@ -35,4 +37,16 @@ def get_epoch_string(epoch: int):
     epoch_string = str(epoch)
     while len(epoch_string) < 3:
         epoch_string = '0' + epoch_string
-    return epoch_string
+    return epoch_string    
+
+def collapse_test_period(cfg: Config) -> Config:
+    """Collapse the test period to just one day"""
+    cfg_dict = cfg.as_dict()
+    cfg_dict['test_end_date'] = cfg.test_start_date + timedelta(days=1)
+    new_cfg = Config(cfg_dict)
+    return new_cfg
+
+def write_list_to_txt(list_to_write: list, path: str):
+    with open(path, 'w') as f:
+        f.writelines(f'{item}\n' for item in list_to_write)
+    
