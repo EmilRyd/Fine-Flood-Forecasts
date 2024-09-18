@@ -1,11 +1,7 @@
-,Metric,sota_20,01466500,Benchmark
-0,NSE (mean),0.7,0.71,<b>0.76</b>
-1,NSE (median),0.7,0.71,<b>0.8</b>
-2,KGE (median),0.77,0.77,<b>0.8</b>
-3,Alpha-NSE (median),0.84,0.83,<b>0.88</b>
-4,Beta-NSE (median),-0.07,-0.07,<b>-0.02</b>
-5,Pearson-r (median),0.84,0.84,<b>0.9</b>
-6,FHV (median),-17.35,-18.04,<b>-11.91</b>
-7,FMS (median),3.3,<b>2.92</b>,-6.69
-8,FLV (median),<b>2.18</b>,27.81,2.57
-9,Peak-Timing (median),<b>0.2</b>,0.2,0.41
+,Metric,sota_20,basin_08178880
+0,NSE (mean),0.66,<b>0.66</b>
+1,KGE (mean),0.72,<b>0.73</b>
+2,MSE (mean),0.54,<b>0.54</b>
+3,NSE (median),0.66,<b>0.66</b>
+4,KGE (median),0.72,<b>0.73</b>
+5,MSE (median),0.54,<b>0.54</b>
