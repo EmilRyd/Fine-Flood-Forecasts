@@ -8,6 +8,7 @@ from datetime import timedelta
 from typing import Union
 import os
 from strenum import StrEnum
+import pandas as pd
 
 """Constants"""
 NUM_BASINS = 531
@@ -83,6 +84,13 @@ def generate_cluster_configs(base_config: Config, cluster_dir: Path) -> list:
         cluster_paths.append(cluster_path)
     return cluster_paths
 
+def load_all_caravan_basins():
+    # stores all caravan basins in the appropriate txt file
+    attr_path = Path(__file__).parent.parent / 'data' / 'Caravan' / 'attributes'
+    datasets = ['camels', 'camelsaus', 'camelsbr', 'camelscl', 'camelsgb', 'hysets', 'lamahh']
+    for ds in datasets:
+        df = pd.read_csv(attr_path / f'attributes_caravan_{ds}.csv')['gauge_id']
+       
     
 """Classes"""
 
