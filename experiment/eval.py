@@ -41,7 +41,7 @@ def bold_better(row):
     return new_row
 
 
-def evalute_model_csvs(model_eval_files: dict, include_benchmark=True, bolden_values=True):
+def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark=True, bolden_values=True):
     """takes in a dict of model_name: eval_csvs pairs and generates a table comparing their metrics"""
 
     comparison_df = pd.DataFrame()
@@ -50,7 +50,12 @@ def evalute_model_csvs(model_eval_files: dict, include_benchmark=True, bolden_va
         assert os.path.exists(eval_file), "Metric eval file does not exist. Did you run the eval script yet?"
         
         # read csv
-        df = pd.read_csv(eval_file).drop(columns='basin')
+        df = pd.read_csv(eval_file)
+
+        if len(basins) > 0:
+            df = df[df.basin.isin(basins)].reset_index(drop=True)
+
+        df.drop(columns='basin', inplace=True)
 
         # average across the columns
         mean_ = 'mean'
@@ -85,7 +90,7 @@ def evalute_model_csvs(model_eval_files: dict, include_benchmark=True, bolden_va
 
 
 
-def evaluate_models(models: list):
+def evaluate_models(models: list, basins: list = []):
     """Takes list of TrainedModel objects and evalutes them against each other"""
     models_dict = {}
     for model in models:
@@ -98,7 +103,7 @@ def evaluate_models(models: list):
         models_dict[model.config_id] = model.metrics_file
         
     # evalauate the model csvs
-    df = evalute_model_csvs(models_dict)
+    df = evalute_model_csvs(models_dict, basins=basins)
 
     # write the evaluated df to disk
     df.to_csv(os.path.join(eval_dir, 'eval.csv'))

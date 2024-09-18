@@ -278,3 +278,4 @@ evolving_attributes:
 # whether to use basin id one hot encoding as (additional) static input
 use_basin_id_encoding: False
 
+allow_subsequent_nan_losses: 100

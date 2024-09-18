@@ -335,7 +335,10 @@ def get_frequency_factor(freq_one: str, freq_two: str) -> float:
     """
     if freq_one == freq_two:
         return 1
-
+    
+    if freq_one == 'H':
+        freq_one = 'h'
+        
     offset_one = to_offset(freq_one)
     offset_two = to_offset(freq_two)
     if offset_one.n < 0 or offset_two.n < 0:
