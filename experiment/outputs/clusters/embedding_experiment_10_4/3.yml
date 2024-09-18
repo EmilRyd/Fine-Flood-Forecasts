@@ -59,7 +59,7 @@ metrics:
 - Missed-Peaks
 - Peak-MAPE
 model: cudalstm
-num_workers: 16
+num_workers: 8
 number_of_basins: 531
 optimizer: Adam
 output_activation: linear
