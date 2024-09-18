@@ -10,6 +10,7 @@ import os
 from strenum import StrEnum
 import pandas as pd
 import numpy as np
+import re
 
 """Constants"""
 NUM_BASINS = 531
@@ -98,7 +99,30 @@ def load_all_caravan_basins():
     write_list_to_txt(all_gauge_ids, basin_file)
     return
 
-load_all_caravan_basins()
+def get_losses(log_file_path: str):
+    
+
+    train_losses = {}
+    val_losses = {}
+
+    # Read the log file
+    with open(log_file_path, 'r') as f:
+        for line in f:
+            # Extract training loss using regex
+            train_match = re.search(r'avg_total_loss:\s*([\d.]+)', line)
+            # Extract validation loss using regex
+            val_match = re.search(r'average validation loss:\s*([\d.]+)', line)
+            # Extract epochs
+            epoch_match = re.search(r'Epoch\s*(\d+)', line)
+            
+            if train_match:
+                assert epoch_match, "no epoch found"
+                train_losses[str(epoch_match.group(1))] = (float(train_match.group(1)))
+            if val_match:
+                assert epoch_match, "no epoch found"
+                val_losses[str(epoch_match.group(1))] = (float(val_match.group(1)))
+    return train_losses, val_losses
+
 
     
 """Classes"""

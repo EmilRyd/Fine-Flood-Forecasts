@@ -372,6 +372,8 @@ class BaseTrainer(object):
                 self.cfg.run_dir = self.cfg.run_dir / run_name
 
         # create folder + necessary subfolder
+        if self.cfg.run_dir.is_dir():
+            shutil.rmtree(self.cfg.run_dir)
         if not self.cfg.run_dir.is_dir():
             self.cfg.train_dir = self.cfg.run_dir / "train_data"
             self.cfg.train_dir.mkdir(parents=True)
