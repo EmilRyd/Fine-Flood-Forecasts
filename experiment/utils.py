@@ -9,6 +9,7 @@ from typing import Union
 import os
 from strenum import StrEnum
 import pandas as pd
+import numpy as np
 
 """Constants"""
 NUM_BASINS = 531
@@ -88,9 +89,17 @@ def load_all_caravan_basins():
     # stores all caravan basins in the appropriate txt file
     attr_path = Path(__file__).parent.parent / 'data' / 'Caravan' / 'attributes'
     datasets = ['camels', 'camelsaus', 'camelsbr', 'camelscl', 'camelsgb', 'hysets', 'lamahh']
+    all_gauge_ids = []
     for ds in datasets:
-        df = pd.read_csv(attr_path / f'attributes_caravan_{ds}.csv')['gauge_id']
-       
+        ds_gauge_ids = list(pd.read_csv(attr_path / f'attributes_caravan_{ds}.csv')['gauge_id'])
+        all_gauge_ids = all_gauge_ids + ds_gauge_ids
+    assert len(all_gauge_ids) == len(np.unique(all_gauge_ids)), 'repeating gauge ids'
+    basin_file = Path(__file__).parent / 'assets' / 'caravan.txt'
+    write_list_to_txt(all_gauge_ids, basin_file)
+    return
+
+load_all_caravan_basins()
+
     
 """Classes"""
 
