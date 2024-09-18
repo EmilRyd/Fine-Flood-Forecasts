@@ -117,7 +117,9 @@ class TrainedModel:
         self.cfg = Config(self.cfg_path)
         self.config_id = self.cfg.experiment_name
         self.epoch = self.cfg.epochs
-        self.run_dir = Path(__file__).parent / 'models' / 'runs' / self.config_id
+
+        
+        self.run_dir = self.cfg_path.parent
         
         epoch_string = get_epoch_string(self.epoch)
         self.metrics_file = (self.run_dir
@@ -126,6 +128,9 @@ class TrainedModel:
     def get_cfg_path(self, experiment_name: str) -> Path:
         return Path(__file__).parent / 'models' / 'runs' / experiment_name / 'config.yml'
 
+    def get_eval_metrics_file(self, period: str='test') -> Path:
+        epoch_string = get_epoch_string(self.epoch)
+        return (self.run_dir / period / f'model_epoch{epoch_string}' / f'{period}_metrics.csv') 
 
 class TrainedModelID(StrEnum):
     EMB_20 = 'embedding_experiment_20'
