@@ -42,8 +42,7 @@ def main(model: TrainedModel = None, config_file_path: Path = None):
     # evaluate the separate models
     evaluate_models(all_models)
 
-
 if __name__ == '__main__':
-   # perform clustering experiment on a given mode
-   model = TrainedModel(TrainedModelID.EMB_10.value)
-   main(model=model)
+    # perform clustering experiment on a given mode
+    config_file_path = Path(__file__).parent / 'models' / 'emb_caravan_config.yml'
+    main(config_file_path=config_file_path)
