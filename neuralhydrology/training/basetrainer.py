@@ -5,6 +5,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict
+import shutil
 
 import numpy as np
 import torch
@@ -22,7 +23,6 @@ from neuralhydrology.training import get_loss_obj, get_optimizer, get_regulariza
 from neuralhydrology.training.logger import Logger
 from neuralhydrology.utils.config import Config
 from neuralhydrology.utils.logging_utils import setup_logging
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -372,6 +372,8 @@ class BaseTrainer(object):
                 self.cfg.run_dir = self.cfg.run_dir / run_name
 
         # create folder + necessary subfolder
+        if self.cfg.run_dir.is_dir():
+            shutil.rmtree(self.cfg.run_dir)
         if not self.cfg.run_dir.is_dir():
             self.cfg.train_dir = self.cfg.run_dir / "train_data"
             self.cfg.train_dir.mkdir(parents=True)

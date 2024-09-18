@@ -88,10 +88,10 @@ def generate_cluster_configs(base_config: Config, cluster_dir: Path) -> list:
 def load_all_caravan_basins():
     # stores all caravan basins in the appropriate txt file
     attr_path = Path(__file__).parent.parent / 'data' / 'Caravan' / 'attributes'
-    datasets = ['camels', 'camelsaus', 'camelsbr', 'camelscl', 'camelsgb', 'hysets', 'lamahh']
+    datasets = ['camels', 'camelsaus', 'camelsbr', 'camelscl', 'camelsgb', 'hysets', 'lamah']
     all_gauge_ids = []
     for ds in datasets:
-        ds_gauge_ids = list(pd.read_csv(attr_path / f'attributes_caravan_{ds}.csv')['gauge_id'])
+        ds_gauge_ids = list(pd.read_csv(attr_path / f'{ds}' / f'attributes_caravan_{ds}.csv')['gauge_id'])
         all_gauge_ids = all_gauge_ids + ds_gauge_ids
     assert len(all_gauge_ids) == len(np.unique(all_gauge_ids)), 'repeating gauge ids'
     basin_file = Path(__file__).parent / 'assets' / 'caravan.txt'
