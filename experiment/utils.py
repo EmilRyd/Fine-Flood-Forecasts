@@ -59,11 +59,10 @@ def write_list_to_txt(list_to_write: list, path: str):
 
 def get_cluster_config(base_config: Config, cluster: int, cluster_file: Path) -> Config:
     assert os.path.exists(cluster_file), f'Cluster basin list file {cluster_file} does not exist!'
-    cluster_config_dict = base_config._cfg
+    cluster_config_dict = base_config._cfg.copy
     cluster_config_dict['experiment_name'] = base_config.experiment_name + f'cluster{cluster}'
     cluster_config_dict['train_basin_file'] = cluster_file
     cluster_config_dict['test_basin_file'] = cluster_file
-    cluster_config_dict['epochs'] = 1 # hack for quicker run through
     cluster_config = Config(cluster_config_dict)
     
 

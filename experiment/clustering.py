@@ -71,7 +71,7 @@ def investigate_clusters(embeddings, max_clusters=50):
     plt.plot(n_clusters, errors)
     plt.show()
 
-def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool = True, method=KMeans) -> Path:
+def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool = True, method=KMeans, n_clusters=4) -> Path:
     
     # get trained cuda model
     (cuda_model, cfg) = load_cuda_model(config_file=model.cfg_path, run_dir=model.run_dir)
@@ -86,7 +86,7 @@ def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool 
         investigate_clusters(embeddings=embeddings)
 
     # retreive clusters
-    fitted_cluster = cluster(embeddings, method=method)
+    fitted_cluster = cluster(embeddings, method=method, n_clusters=n_clusters)
 
     labels = fitted_cluster.labels_
 

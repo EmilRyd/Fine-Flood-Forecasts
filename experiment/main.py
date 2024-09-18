@@ -37,7 +37,7 @@ def main(model: TrainedModel = None, config_file_path: Path = None):
     # train the new models
     clustered_models = train_models(cluster_config_paths)
     
-    all_models = list(set(clustered_models) + set(model))
+    all_models = clustered_models + models
     
     # evaluate the separate models
     evaluate_models(all_models)
@@ -45,5 +45,5 @@ def main(model: TrainedModel = None, config_file_path: Path = None):
 
 if __name__ == '__main__':
    # perform clustering experiment on a given mode
-   model = TrainedModel(TrainedModelID.EMB_20.value)
+   model = TrainedModel(TrainedModelID.EMB_10.value)
    main(model=model)
