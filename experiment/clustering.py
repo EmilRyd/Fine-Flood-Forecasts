@@ -69,6 +69,8 @@ def investigate_clusters(embeddings, max_clusters=50):
         errors.append(fitted_cluster.inertia_)
 
     plt.plot(n_clusters, errors)
+    plt.xlabel('Number of clusters')
+    plt.ylabel('Inertia')
     plt.show()
 
 def generate_clusters_in_embedding_space(model: TrainedModel, investigate: bool = True, method=KMeans, n_clusters=4) -> Path:

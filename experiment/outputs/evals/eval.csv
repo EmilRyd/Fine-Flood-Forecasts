@@ -1,7 +1,7 @@
-,Metric,basin_14400000
-0,NSE (mean),<b>0.9</b>
-1,KGE (mean),<b>0.95</b>
-2,MSE (mean),<b>17.52</b>
-3,NSE (median),<b>0.9</b>
-4,KGE (median),<b>0.95</b>
-5,MSE (median),<b>17.52</b>
+,Metric,basin_01580000
+0,NSE (mean),<b>0.71</b>
+1,KGE (mean),<b>0.71</b>
+2,MSE (mean),<b>0.71</b>
+3,NSE (median),<b>0.71</b>
+4,KGE (median),<b>0.71</b>
+5,MSE (median),<b>0.71</b>
