@@ -4,9 +4,9 @@
 experiment_name: sota_20
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
-train_basin_file: 531_basins.txt
-validation_basin_file: 531_basins.txt
-test_basin_file: 531_basins.txt
+train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
+validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
+test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
 
 # training, validation and test time periods (format = 'dd/mm/yyyy')
 train_start_date: "01/10/1999"
@@ -118,7 +118,7 @@ predict_last_n: 1
 seq_length: 365
 
 # Number of parallel workers used in the data pipeline
-num_workers: 16
+num_workers: 4
 
 # Log the training loss every n steps
 log_interval: 5
@@ -138,7 +138,7 @@ save_weights_every: 1
 dataset: camels_us
 
 # Path to data set root
-data_dir: ../../data/CAMELS_US
+data_dir: /home/admin/Fine-Flood-Forecasts/data/CAMELS_US
 
 # Forcing product [daymet, maurer, maurer_extended, nldas, nldas_extended, nldas_hourly]
 # can be either a list of forcings or a single forcing product

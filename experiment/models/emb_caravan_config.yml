@@ -4,9 +4,9 @@
 experiment_name: embedding_caravan
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
-train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/caravan.txt
-validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/caravan.txt
-test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/caravan.txt
+train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/caravan_test.txt
+validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/caravan_test.txt
+test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/caravan_test.txt
 
 # training, validation and test time periods (format = 'dd/mm/yyyy')
 train_start_date: "01/10/1999"
@@ -109,7 +109,7 @@ learning_rate:
   25: 1e-4
 
 # Mini-batch size
-batch_size: 256
+batch_size: 128
 
 # Number of training epochs
 epochs: 30

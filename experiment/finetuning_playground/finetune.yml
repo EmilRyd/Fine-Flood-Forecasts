@@ -1,6 +1,6 @@
 base_run_dir: /home/admin/Fine-Flood-Forecasts/experiment/models/runs/sota_20
-epochs: 10
-experiment_name: basin_09484600
+epochs: 1
+experiment_name: basin_14400000
 finetune_modules:
 - lstm
 - head
@@ -12,6 +12,6 @@ metrics:
 - NSE
 - KGE
 - MSE
-test_basin_file: finetune_basin.txt
-train_basin_file: finetune_basin.txt
-validation_basin_file: finetune_basin.txt
+test_basin_file: assets/finetune_basin_14400000.txt
+train_basin_file: assets/finetune_basin_14400000.txt
+validation_basin_file: assets/finetune_basin_14400000.txt
