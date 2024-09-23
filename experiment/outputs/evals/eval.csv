@@ -1,7 +1,7 @@
-,Metric,basin_01580000
-0,NSE (mean),<b>0.71</b>
-1,KGE (mean),<b>0.71</b>
-2,MSE (mean),<b>0.71</b>
-3,NSE (median),<b>0.71</b>
-4,KGE (median),<b>0.71</b>
-5,MSE (median),<b>0.71</b>
+,Metric,sota_20,basin_05362000
+0,NSE (mean),0.82,<b>nan</b>
+1,KGE (mean),0.74,<b>nan</b>
+2,MSE (mean),0.55,<b>nan</b>
+3,NSE (median),0.82,<b>nan</b>
+4,KGE (median),0.74,<b>nan</b>
+5,MSE (median),0.55,<b>nan</b>
