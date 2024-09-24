@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from neuralhydrology.nh_run import eval_run
 import numpy as np
-from experiment.utils import TrainedModel
+from experiment.utils import TrainedModel, TrainedModelID
 # Display the DataFrame with HTML rendering
 from IPython.core.display import display, HTML
 import re
@@ -121,3 +121,6 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
     return df
 
 
+model = TrainedModel(TrainedModelID.SOTA_20)
+
+evaluate_models([model], include_benchmark=False, period='validation')
