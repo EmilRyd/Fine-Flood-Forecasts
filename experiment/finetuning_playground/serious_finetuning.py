@@ -13,8 +13,11 @@ from experiment.eval import evaluate_models
 import os
 import yaml
 import matplotlib.pyplot as plt
-import optuna
+
 import numpy as np
+
+import hyperopt
+from hyperopt import hp
 
 # start with SOTA Camels model
 model = TrainedModel(TrainedModelID.SOTA_20)
@@ -48,56 +51,43 @@ def update_files(basin, yml_file_path="finetune.yml"):
     with open(f"finetune_basin.txt", "w") as fp:
         fp.write(basin) 
 
-def finetune_model(trial):
+def finetune_model(args):
+
+    # get base cfg
+    yml_file_path = Path(__file__).parent / 'finetune.yml'
 
    # Load the existing YAML data
-    with open('finetune.yml', 'r') as f:
+    with open(yml_file_path, 'r') as f:
         data = yaml.safe_load(f)
-    
-    epochs = trial.suggest_int('epochs', 1, 3)
-    
-    # set dict parameters based on config dictionary passed to function    
-    data['epochs'] = epochs
+
+    # set dict parameters based on config dictionary passed to function
+    for key, value in config.items():
+        data[key] = int(value)
     
     # finetune using temporary yaml file
-    
-    with tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent, suffix='.yml', mode='w') as f:
+    #tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent, suffix='.yml', mode='w')
+    with open(Path(__file__).parent / 'finetune_new.yml', 'w') as f:
         yaml.dump(data, f)  
-        print(f.name)
-        finetune(Path(__file__).parent / f.name)
+
+        finetune(Path(__file__).parent / 'finetune_new.yml')
 
         run_dir = Path(os.path.abspath('')) / 'runs' / f'basin_{basin}'
         config_file_path = run_dir / 'config.yml'
 
         finetuned_model = TrainedModel(config_file_path_or_experiment_name=config_file_path)
-        
+
+        # TODO validation returns all nans!
         t_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='train')
         v_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='validation')
-        trial.report(float(v_df.iloc[0][f'basin_{basin}']), epochs)
-        return float(v_df.iloc[0][f'basin_{basin}'])
+    
+    return {v_df.iloc[0][f'basin_{basin}']
 
 
+if __name__ == '__main__':
+    # pick a basin and update config file accordingly
+    basin, nse = pick_a_basin()
+    # define hyperparameter search space
+    search_space = hp.choice('epochs', [1,2])
+    grid_search = GridSearchCV()
 
-# pick a basin and update config file accordingly
-basin, nse = pick_a_basin()
-
-# update config yml and basin txt files
-update_files(basin=basin)
-
-# perform hyperparameter search over finetuning
-study = optuna.create_study()
-study.optimize(finetune_model, n_trials=1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    

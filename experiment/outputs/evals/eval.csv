@@ -1,7 +1,29 @@
-,Metric,sota_20,basin_02212600
-0,NSE (mean),<b>0.79</b>,0.79
-1,KGE (mean),<b>0.73</b>,0.64
-2,MSE (mean),<b>0.7</b>,0.72
-3,NSE (median),<b>0.79</b>,0.79
-4,KGE (median),<b>0.73</b>,0.64
-5,MSE (median),<b>0.7</b>,0.72
+,Metric,sota_20
+0,NSE (mean),<b>-5.03</b>
+1,KGE (mean),<b>0.59</b>
+2,Alpha-NSE (mean),<b>0.95</b>
+3,Beta-NSE (mean),<b>0.07</b>
+4,MSE (mean),<b>2.07</b>
+5,RMSE (mean),<b>1.2</b>
+6,Pearson-r (mean),<b>0.87</b>
+7,Beta-KGE (mean),<b>0.96</b>
+8,FHV (mean),<b>-12.05</b>
+9,FMS (mean),<b>180335.66</b>
+10,FLV (mean),<b>-18132162430.09</b>
+11,Peak-Timing (mean),<b>0.43</b>
+12,Missed-Peaks (mean),<b>0.39</b>
+13,Peak-MAPE (mean),<b>42.11</b>
+14,NSE (median),<b>0.78</b>
+15,KGE (median),<b>0.77</b>
+16,Alpha-NSE (median),<b>0.85</b>
+17,Beta-NSE (median),<b>-0.03</b>
+18,MSE (median),<b>1.02</b>
+19,RMSE (median),<b>1.01</b>
+20,Pearson-r (median),<b>0.9</b>
+21,Beta-KGE (median),<b>0.94</b>
+22,FHV (median),<b>-14.79</b>
+23,FMS (median),<b>-8.13</b>
+24,FLV (median),<b>0.64</b>
+25,Peak-Timing (median),<b>0.31</b>
+26,Missed-Peaks (median),<b>0.36</b>
+27,Peak-MAPE (median),<b>37.65</b>
