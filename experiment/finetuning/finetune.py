@@ -12,7 +12,7 @@ import os
 import yaml
 import numpy as np
 
-from hyperopt import fmin, Trials, tpe, hp
+from hyperopt import fmin, Trials, tpe, STATUS_OK
 
 
 
@@ -23,11 +23,12 @@ def pick_a_basin(model: TrainedModel):
     basin_data = df.loc[df['NSE'] > cutoff].sample(n=1)
     basin = basin_data.basin.iloc[0]
     nse = basin_data.NSE.iloc[0]
+    update_files(model=model, basin=basin)
     return basin, nse
 
-def update_files(model: TrainedModel, basin: str, yml_file_path="finetune.yml"):
+def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('assets', 'finetune.yml')):
+    
     # Add the path to the pre-trained model to the finetune config
-
     with open(yml_file_path, "a") as fp:
         fp.write(f"\nbase_run_dir: {model.run_dir.absolute()}")
 
@@ -41,8 +42,10 @@ def update_files(model: TrainedModel, basin: str, yml_file_path="finetune.yml"):
     with open(yml_file_path, 'w') as f:
         yaml.dump(data, f)  
 
+    basin_file_path = data['train_basin_file']
+    
     # Create a basin file with the basin we selected above
-    with open(f"finetune_basin.txt", "w") as fp:
+    with open(basin_file_path, 'w') as fp:
         fp.write(basin) 
 
 def finetune_model(args):
@@ -51,7 +54,7 @@ def finetune_model(args):
     model = args['model']
     
     # get base cfg
-    yml_file_path = Path(__file__).parent / 'finetune.yml'
+    yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
 
    # Load the existing YAML data
     with open(yml_file_path, 'r') as f:
@@ -80,19 +83,17 @@ def finetune_model(args):
 
         finetuned_model = TrainedModel(config_file_path_or_experiment_name=config_file_path)
 
-        # TODO validation returns all nans!
-        t_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='train')
-        v_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='validation')
-
-    return {'loss': -float(v_df.iloc[0][f'basin_{basin}']), 'model': finetuned_model}
-
-
-def find_best_finetuning_params(basin: str, search_space: dict):
-   
+        v_df = evaluate_models([finetuned_model], basins=[basin], include_benchmark=False, period='validation')
     
+    # return negative validation score
+    return {'loss': -float(v_df.iloc[0][f'basin_{basin}']), 'status': STATUS_OK, 'model': finetuned_model}
+
+
+def find_best_finetuning_params(search_space: dict):
+   
     trials = Trials()
     best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=3, trials=trials)
     
-    return best
+    return best, trials.best_trial['result']['model']
 
     

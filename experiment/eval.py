@@ -62,6 +62,7 @@ def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark: 
 
         if len(basins) > 0:
             df = df[df.basin.isin(basins)].reset_index(drop=True)
+            assert not df.empty, 'wrong basin!'
 
         df.drop(columns='basin', inplace=True)
 
