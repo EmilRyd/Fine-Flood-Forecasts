@@ -13,9 +13,8 @@ from experiment.eval import evaluate_models
 import os
 import yaml
 import matplotlib.pyplot as plt
-
+import optuna
 import numpy as np
-from ray import train, tune
 
 # start with SOTA Camels model
 model = TrainedModel(TrainedModelID.SOTA_20)
@@ -49,52 +48,45 @@ def update_files(basin, yml_file_path="finetune.yml"):
     with open(f"finetune_basin.txt", "w") as fp:
         fp.write(basin) 
 
-def finetune_model(config):
+def finetune_model(trial):
 
-    # get base cfg
-    base_cfg = Config(Path(__file__).parent / 'finetune.yml')
-
-    # copy dict to change it
-    cfg_dict = base_cfg._cfg.copy()
-
-    # set dict parameters based on config dictionary passed to function
-    for key, value in config.items():
-        cfg_dict[key] = value
+   # Load the existing YAML data
+    with open('finetune.yml', 'r') as f:
+        data = yaml.safe_load(f)
+    
+    epochs = trial.suggest_int('epochs', 1, 3)
+    
+    # set dict parameters based on config dictionary passed to function    
+    data['epochs'] = epochs
     
     # finetune using temporary yaml file
-    #tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent, suffix='.yml', mode='w')
-    with open(Path(__file__).parent / 'finetune_new.yml') as f:
-        yaml.dump(cfg_dict, f)  
+    
+    with tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent, suffix='.yml', mode='w') as f:
+        yaml.dump(data, f)  
         print(f.name)
-        finetune(f.name)
+        finetune(Path(__file__).parent / f.name)
 
-        finetuned_model = TrainedModel(config_file_path_or_experiment_name=Path(__file__).parent / f.name)
+        run_dir = Path(os.path.abspath('')) / 'runs' / f'basin_{basin}'
+        config_file_path = run_dir / 'config.yml'
+
+        finetuned_model = TrainedModel(config_file_path_or_experiment_name=config_file_path)
         
-        # TODO validation returns all nans!
         t_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='train')
         v_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='validation')
-        train.record({'train':t_df.NSE, 'validation': v_df.NSE})
+        trial.report(float(v_df.iloc[0][f'basin_{basin}']), epochs)
+        return float(v_df.iloc[0][f'basin_{basin}'])
 
 
-if __name__ == '__main__':
-    # pick a basin and update config file accordingly
-    basin, nse = pick_a_basin()
-    # define hyperparameter search space
-    search_space = {
-        'basin': basin,
-        'epochs': tune.grid_search(np.arange(1,3,40))
-    }
 
-    # update config yml and basin txt files
-    update_files(basin=basin)
+# pick a basin and update config file accordingly
+basin, nse = pick_a_basin()
 
-    # perform hyperparameter search over finetuning
-    tuner = tune.Tuner(
-        finetune_model,
-        param_space=search_space,
-        run_config=train.RunConfig(storage_path=Path(__file__).parent / 'tuning_results')
-    )
-    results = tuner.fit()
+# update config yml and basin txt files
+update_files(basin=basin)
+
+# perform hyperparameter search over finetuning
+study = optuna.create_study()
+study.optimize(finetune_model, n_trials=1)
 
 
 

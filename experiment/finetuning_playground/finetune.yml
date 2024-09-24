@@ -1,6 +1,6 @@
 base_run_dir: /home/admin/Fine-Flood-Forecasts/experiment/models/runs/sota_20
 epochs: 1
-experiment_name: basin_06879650
+experiment_name: basin_02212600
 finetune_modules:
 - lstm
 - head
