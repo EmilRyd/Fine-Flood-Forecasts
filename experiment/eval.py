@@ -49,7 +49,7 @@ def bold_better(row):
     return new_row
 
 
-def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark: bool, bolden_values=True):
+def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark: bool, bolden_values: bool):
     """takes in a dict of model_name: eval_csvs pairs and generates a table comparing their metrics"""
 
     comparison_df = pd.DataFrame()
@@ -98,7 +98,7 @@ def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark: 
 
 
 
-def evaluate_models(models: list, basins: list = [], include_benchmark: bool = True, period='test'):
+def evaluate_models(models: list, basins: list = [], include_benchmark: bool = True, period='test', bolden_values=False):
     """Takes list of TrainedModel objects and evalutes them against each other"""
     models_dict = {}
     for model in models:
@@ -112,11 +112,11 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
         models_dict[model.config_id] = metrics_file
         
     # evalauate the model csvs
-    df = evalute_model_csvs(models_dict, basins=basins, include_benchmark=include_benchmark)
+    df = evalute_model_csvs(models_dict, basins=basins, include_benchmark=include_benchmark, bolden_values=bolden_values)
 
     # write the evaluated df to disk
     df.to_csv(os.path.join(eval_dir, 'eval.csv'))
-    display(HTML(df.to_html(escape=False)))
+    #display(HTML(df.to_html(escape=False)))
 
     return df
 

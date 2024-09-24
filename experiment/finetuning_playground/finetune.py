@@ -3,21 +3,17 @@
 # Imports
 from pathlib import Path
 import tempfile
-from experiment.utils import TrainedModel, TrainedModelID, get_losses
+import json
+from experiment.utils import TrainedModel, TrainedModelID
 
 import pandas as pd
-import torch
-from neuralhydrology.nh_run import start_run, eval_run, finetune
-from neuralhydrology.utils.config import Config
+from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
 import os
 import yaml
-import matplotlib.pyplot as plt
-
 import numpy as np
 
-import hyperopt
-from hyperopt import hp
+from hyperopt import fmin, Trials, tpe, hp
 
 # start with SOTA Camels model
 model = TrainedModel(TrainedModelID.SOTA_20)
@@ -53,6 +49,8 @@ def update_files(basin, yml_file_path="finetune.yml"):
 
 def finetune_model(args):
 
+    epochs = args['epochs']
+
     # get base cfg
     yml_file_path = Path(__file__).parent / 'finetune.yml'
 
@@ -61,9 +59,14 @@ def finetune_model(args):
         data = yaml.safe_load(f)
 
     # set dict parameters based on config dictionary passed to function
-    for key, value in config.items():
-        data[key] = int(value)
-    
+    modules = ['head']
+    for key, value in args.items():
+        if (key == 'lstm'):
+            if value:
+                modules.append(key)
+        else:
+            data[key] = value
+    data['finetune_modules'] = modules
     # finetune using temporary yaml file
     #tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent, suffix='.yml', mode='w')
     with open(Path(__file__).parent / 'finetune_new.yml', 'w') as f:
@@ -79,15 +82,26 @@ def finetune_model(args):
         # TODO validation returns all nans!
         t_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='train')
         v_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='validation')
-    
-    return {v_df.iloc[0][f'basin_{basin}']
+
+    return -float(v_df.iloc[0][f'basin_{basin}'])
 
 
 if __name__ == '__main__':
     # pick a basin and update config file accordingly
     basin, nse = pick_a_basin()
     # define hyperparameter search space
-    search_space = hp.choice('epochs', [1,2])
-    grid_search = GridSearchCV()
+    search_space = {
+        'epochs': hp.choice('epochs', [1,2,3,4,5,6,7,8,9,10]),
+        'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
+        'lstm': hp.choice('lstm', [True, False]),
+        'loss': 'NSE'
+    }
+    trials = Trials()
+    best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=3, trials=trials)
+    
+    print(best)
+    print(loss)
+
+
 
     

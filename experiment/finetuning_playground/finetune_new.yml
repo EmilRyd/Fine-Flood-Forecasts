@@ -1,12 +1,11 @@
 base_run_dir: /home/admin/Fine-Flood-Forecasts/experiment/models/runs/sota_20
 epochs: 1
-experiment_name: basin_02296500
+experiment_name: basin_03285000
 finetune_modules:
-- lstm
 - head
 learning_rate:
-  0: 1e-3
-  5: 5e-4
+  0: 0.0001169982938998524
+  5: 4.253866643556945e-05
 loss: NSE
 metrics:
 - NSE
