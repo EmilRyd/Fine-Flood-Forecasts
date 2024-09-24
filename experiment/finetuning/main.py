@@ -1,9 +1,19 @@
 # function to run automated finetuning on a basin
-from experiment.finetuning.finetune import pick_a_basin, find_best_finetuning_params
+from experiment.finetuning.finetune import pick_a_basin, find_best_finetuning_params, finetune_model
 from hyperopt import hp
 from experiment.eval import evaluate_models
 from experiment.utils import TrainedModel, TrainedModelID
 from IPython.core.display import display, HTML
+
+def param_dict_from_model_output(best_params: dict, basin: str):
+    args = {}
+    args['basin'] = basin
+    args['epochs'] = best_params['epochs']
+    args['learning_rate'] = {0: best_params['lr1'], 5: best_params['lr2']}
+    args['loss'] = 'NSE'
+    args['lstm'] = best_params['lstm']
+    return args
+    
 
 def main():
 
@@ -15,21 +25,25 @@ def main():
     # define hyperparameter search space
     search_space = {
         'basin': basin,
-        'model': model,
-        'epochs': hp.choice('epochs', [i for i in range(1,2)]),
+        'epochs': hp.choice('epochs', [1,2]),
         'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
         'lstm': hp.choice('lstm', [True, False]),
         'loss': 'NSE'
     }
 
-    # find the best hyperparameters for fine
-    best_params, finetuned_model = find_best_finetuning_params(search_space=search_space)
+    # find the best hyperparameters for fine-tuning
+    best_params = find_best_finetuning_params(search_space=search_space)
+
+    # add basin back to best params
+    args = param_dict_from_model_output(best_params, basin)
 
     # TODO: save some of this data in a way where you can load it from here
+    finetuning_data = finetune_model(args)
+    finetuned_model = finetuning_data['model']
     # TODO: Check that validation is happening properly, they are not just reusing old validation data fom previous runs?
 
     # compare finetuned model and model
-    basin_df = evaluate_models(models=[model, finetuned_model], basins=[basin], bolden_values=True)
+    basin_df = evaluate_models(models=[model, finetuned_model], basins=[basin], bolden_values=True, include_benchmark=False)
 
     # display the comparison
     display(HTML(basin_df.to_html(escape=False)))

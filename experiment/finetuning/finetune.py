@@ -51,7 +51,6 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
 def finetune_model(args):
 
     basin = args['basin']
-    model = args['model']
     
     # get base cfg
     yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
@@ -67,6 +66,8 @@ def finetune_model(args):
             if (key == 'lstm'):
                 if value:
                     modules.append(key)
+            elif (key == 'epochs'):
+                data[key] = int(value)
             else:
                 data[key] = value
 
@@ -89,11 +90,10 @@ def finetune_model(args):
     return {'loss': -float(v_df.iloc[0][f'basin_{basin}']), 'status': STATUS_OK, 'model': finetuned_model}
 
 
+
 def find_best_finetuning_params(search_space: dict):
    
     trials = Trials()
-    best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=3, trials=trials)
+    best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=2, trials=trials)
     
-    return best, trials.best_trial['result']['model']
-
-    
+    return best

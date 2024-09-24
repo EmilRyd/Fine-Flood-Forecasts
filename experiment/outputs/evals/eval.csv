@@ -1,4 +1,7 @@
-,Metric,sota_20,basin_06291500,Benchmark
-0,NSE (mean),0.76,<b>0.77</b>,0.76
-1,NSE (median),0.79,0.77,<b>0.8</b>
-2,KGE (median),0.8,0.78,<b>0.8</b>
+,Metric,basin_08380500
+0,NSE (mean),0.5344451665878296
+1,KGE (mean),0.6685587512665806
+2,MSE (mean),0.0527252480387687
+3,NSE (median),0.5344451665878296
+4,KGE (median),0.6685587512665806
+5,MSE (median),0.0527252480387687
