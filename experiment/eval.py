@@ -116,7 +116,6 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
 
     # write the evaluated df to disk
     df.to_csv(os.path.join(eval_dir, 'eval.csv'))
-    #display(HTML(df.to_html(escape=False)))
 
     return df
 

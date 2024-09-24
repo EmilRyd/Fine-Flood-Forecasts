@@ -4,8 +4,7 @@
 from pathlib import Path
 import tempfile
 import json
-from experiment.utils import TrainedModel, TrainedModelID
-
+from experiment.utils import TrainedModel
 import pandas as pd
 from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
@@ -15,11 +14,10 @@ import numpy as np
 
 from hyperopt import fmin, Trials, tpe, hp
 
-# start with SOTA Camels model
-model = TrainedModel(TrainedModelID.SOTA_20)
+
 
 # pick a basin
-def pick_a_basin():
+def pick_a_basin(model: TrainedModel):
     df = pd.read_csv(model.get_eval_metrics_file(period='validation'), dtype={'basin':str})
     cutoff = 0.0
     basin_data = df.loc[df['NSE'] > cutoff].sample(n=1)
@@ -27,7 +25,7 @@ def pick_a_basin():
     nse = basin_data.NSE.iloc[0]
     return basin, nse
 
-def update_files(basin, yml_file_path="finetune.yml"):
+def update_files(model: TrainedModel, basin: str, yml_file_path="finetune.yml"):
     # Add the path to the pre-trained model to the finetune config
 
     with open(yml_file_path, "a") as fp:
@@ -49,8 +47,9 @@ def update_files(basin, yml_file_path="finetune.yml"):
 
 def finetune_model(args):
 
-    epochs = args['epochs']
-
+    basin = args['basin']
+    model = args['model']
+    
     # get base cfg
     yml_file_path = Path(__file__).parent / 'finetune.yml'
 
@@ -61,18 +60,20 @@ def finetune_model(args):
     # set dict parameters based on config dictionary passed to function
     modules = ['head']
     for key, value in args.items():
-        if (key == 'lstm'):
-            if value:
-                modules.append(key)
-        else:
-            data[key] = value
+        if not (key == 'basin') and not (key == 'model'):
+            if (key == 'lstm'):
+                if value:
+                    modules.append(key)
+            else:
+                data[key] = value
+
     data['finetune_modules'] = modules
     # finetune using temporary yaml file
-    #tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent, suffix='.yml', mode='w')
-    with open(Path(__file__).parent / 'finetune_new.yml', 'w') as f:
+    #
+    with tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f:
         yaml.dump(data, f)  
 
-        finetune(Path(__file__).parent / 'finetune_new.yml')
+        finetune(Path(__file__).parent / 'assets' / f.name)
 
         run_dir = Path(os.path.abspath('')) / 'runs' / f'basin_{basin}'
         config_file_path = run_dir / 'config.yml'
@@ -83,25 +84,15 @@ def finetune_model(args):
         t_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='train')
         v_df = evaluate_models([model, finetuned_model], basins=[basin], include_benchmark=False, period='validation')
 
-    return -float(v_df.iloc[0][f'basin_{basin}'])
+    return {'loss': -float(v_df.iloc[0][f'basin_{basin}']), 'model': finetuned_model}
 
 
-if __name__ == '__main__':
-    # pick a basin and update config file accordingly
-    basin, nse = pick_a_basin()
-    # define hyperparameter search space
-    search_space = {
-        'epochs': hp.choice('epochs', [1,2,3,4,5,6,7,8,9,10]),
-        'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
-        'lstm': hp.choice('lstm', [True, False]),
-        'loss': 'NSE'
-    }
+def find_best_finetuning_params(basin: str, search_space: dict):
+   
+    
     trials = Trials()
     best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=3, trials=trials)
     
-    print(best)
-    print(loss)
-
-
+    return best
 
     
