@@ -3,25 +3,26 @@
 # Imports
 from pathlib import Path
 import tempfile
-import json
 from experiment.utils import TrainedModel
 import pandas as pd
 from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
 import os
 import yaml
-import numpy as np
 from experiment.finetuning.utils import Sweep, param_dict_from_model_output
-
+import logging
 from hyperopt import fmin, Trials, tpe, STATUS_OK
 
 
 
 # pick a basin
-def pick_a_basin(model: TrainedModel, lower: float, higher: float):
+def pick_a_basin(model: TrainedModel, lower: float = None, higher: float = None):
     df = pd.read_csv(model.get_eval_metrics_file(period='validation'), dtype={'basin':str})
+    if lower is None or higher is None:
+        basin_data = df.sample(n=1)
+    else:
+        basin_data = df.loc[(df['NSE'] <= higher) & (df['NSE'] >= lower)].sample(n=1)
 
-    basin_data = df.loc[(df['NSE'] <= higher) & (df['NSE'] >= lower)].sample(n=1)
     basin = basin_data.basin.iloc[0]
     nse = basin_data.NSE.iloc[0]
     update_files(model=model, basin=basin)
@@ -54,8 +55,7 @@ def finetune_model(args):
     basin = args['basin']
 
     # sanity check on args
-    #assert args['epochs'] > 0, f"Number of epochs is invalid: {args['epochs']}"
-    
+    assert args['epochs'] > 0, f"Number of epochs is invalid: {args['epochs']}"
     # get base cfg
     yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
 
@@ -71,7 +71,7 @@ def finetune_model(args):
                 if value:
                     modules.append(key)
             elif (key == 'epochs'):
-                data[key] = int(value) +  1 # make this cleaner mayber
+                data[key] = int(value) # make this cleaner mayber
             else:
                 data[key] = value
 
