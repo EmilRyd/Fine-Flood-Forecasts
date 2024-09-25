@@ -8,8 +8,8 @@ from IPython.core.display import display, HTML
 def param_dict_from_model_output(best_params: dict, basin: str):
     args = {}
     args['basin'] = basin
-    args['epochs'] = best_params['epochs']
-    args['learning_rate'] = {0: best_params['lr1'], 5: best_params['lr2']}
+    args['epochs'] = int(best_params['epochs'])
+    args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
     args['loss'] = 'NSE'
     args['lstm'] = best_params['lstm']
     return args
@@ -25,21 +25,21 @@ def main():
     # define hyperparameter search space
     search_space = {
         'basin': basin,
-        'epochs': hp.choice('epochs', [1,2]),
+        'epochs': hp.choice('epochs', [1]),
         'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
         'lstm': hp.choice('lstm', [True, False]),
         'loss': 'NSE'
     }
 
     # find the best hyperparameters for fine-tuning
-    best_params = find_best_finetuning_params(search_space=search_space)
+    best_params = find_best_finetuning_params(search_space=search_space, max_evals=1)
 
     # add basin back to best params
     args = param_dict_from_model_output(best_params, basin)
 
-    # TODO: save some of this data in a way where you can load it from here
     finetuning_data = finetune_model(args)
     finetuned_model = finetuning_data['model']
+
     # TODO: Check that validation is happening properly, they are not just reusing old validation data fom previous runs?
 
     # compare finetuned model and model

@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from neuralhydrology.nh_run import eval_run
 import numpy as np
-from experiment.utils import TrainedModel, TrainedModelID
+from experiment.utils import TrainedModel, TrainedModelID, NUM_BASINS
 # Display the DataFrame with HTML rendering
 from IPython.core.display import display, HTML
 import re
@@ -108,9 +108,15 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
 
         # if any models are not evaluted yet, do so
         metrics_file = model.get_eval_metrics_file(period=period)
-        if not os.path.exists(metrics_file):
+        if os.path.exists(metrics_file):
+            # check that the basins are the same, or basins are all for both
+            df = pd.read_csv(metrics_file, dtype={'basin':str})
+            if set(df.basin.tolist()) == set(basins) or (len(df.basin) == NUM_BASINS and len(basins)==0):  
+                models_dict[model.config_id] = metrics_file
+            else:
+                eval_run(model.run_dir, period=period, epoch=model.epoch)
+        else:
             eval_run(model.run_dir, period=period, epoch=model.epoch)
-        models_dict[model.config_id] = metrics_file
         
     # evalauate the model csvs
     df = evalute_model_csvs(models_dict, basins=basins, include_benchmark=include_benchmark, bolden_values=bolden_values)

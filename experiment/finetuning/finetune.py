@@ -91,9 +91,9 @@ def finetune_model(args):
 
 
 
-def find_best_finetuning_params(search_space: dict):
+def find_best_finetuning_params(search_space: dict, max_evals=10):
    
     trials = Trials()
-    best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=2, trials=trials)
+    best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
     
     return best
