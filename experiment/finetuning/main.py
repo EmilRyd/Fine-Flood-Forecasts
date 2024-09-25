@@ -4,16 +4,9 @@ from hyperopt import hp
 from experiment.eval import evaluate_models
 from experiment.utils import TrainedModel, TrainedModelID
 from IPython.core.display import display, HTML
+from pathlib import Path
 
-def param_dict_from_model_output(best_params: dict, basin: str):
-    args = {}
-    args['basin'] = basin
-    args['epochs'] = int(best_params['epochs'])
-    args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
-    args['loss'] = 'NSE'
-    args['lstm'] = best_params['lstm']
-    return args
-    
+
 def show_performance_comparison(models: list, basins: list = []):
     if len(basins) == 0:
         # compare how the model performs on all basins
@@ -24,15 +17,26 @@ def show_performance_comparison(models: list, basins: list = []):
 
     # display the comparison
     display(HTML(df.to_html(escape=False)))
+
+def run_experiment_from_file(run_file: Path):
+
+    best_params, model, finetuned_model, basin = load_sweep_from_file(run_file)
+
+    # experiment #1, compare across all basins
+    show_performance_comparison(models=[model, finetuned_model])
+
+    # experiment #0, compare for the finetuned basin
+    show_performance_comparison(models=[model, finetuned_model], basins=[basin])
+
    
-def main(basin: str = None):
+def main(basin: str = None, lower: float = 0.0, higher: float = 1.0):
 
     # select base model, start with SOTA Camels model
     model = TrainedModel(TrainedModelID.SOTA_20)
 
     if basin is None:
         # pick a basin and get its current nse
-        basin, _ = pick_a_basin(model=model)
+        basin, _ = pick_a_basin(model=model, lower=lower,)
     
     # define hyperparameter search space
     search_space = {
@@ -42,23 +46,12 @@ def main(basin: str = None):
         'lstm': hp.choice('lstm', [True, False]),
         'loss': 'NSE'
     }
+    
+    # run the finetuning
+    sweep = find_best_finetuning_params(search_space=search_space, model=model)
+    sweep_results = sweep.save()
 
-    # find the best hyperparameters for fine-tuning
-    best_params = find_best_finetuning_params(search_space=search_space, max_evals=1)
-
-    # add basin back to best params
-    args = param_dict_from_model_output(best_params, basin)
-
-    finetuning_data = finetune_model(args)
-    finetuned_model = finetuning_data['model']
-
-    # TODO: order is currently necessary so that vlaidation does happen across all basins. fi to avoid doing this hack.
-
-    # experiment #1, compare across all basins
-    show_performance_comparison(models=[model, finetuned_model])
-
-    # experiment #0, compare for the finetuned basin
-    show_performance_comparison(models=[model, finetuned_model], basins=[basin])
+    show_performance_comparison(sweep_results)
 
     # experiment #2, compare the ratios of training and validation over the training and the finetuning period
     

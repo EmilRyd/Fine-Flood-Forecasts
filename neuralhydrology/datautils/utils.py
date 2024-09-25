@@ -335,6 +335,11 @@ def get_frequency_factor(freq_one: str, freq_two: str) -> float:
     """
     if freq_one == freq_two:
         return 1
+
+    if freq_one == 'H':
+        freq_one = 'h'
+    if freq_two == 'H':
+        freq_two = 'h'
     
     offset_one = to_offset(freq_one)
     offset_two = to_offset(freq_two)
@@ -379,6 +384,10 @@ def get_frequency_factor(freq_one: str, freq_two: str) -> float:
             for offset in [offset_one, offset_two]):
         raise ValueError(f'Frequencies {freq_one} and/or {freq_two} are not comparable.')
     try:
+        if freq_one == 'H':
+            freq_one = 'h'
+        if freq_two == 'H':
+            freq_two = 'h'
         factor = pd.to_timedelta(freq_one) / pd.to_timedelta(freq_two)
     except ValueError as err:
         raise ValueError(f'Frequencies {freq_one} and/or {freq_two} are not comparable.') from err

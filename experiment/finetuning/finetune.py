@@ -11,16 +11,17 @@ from experiment.eval import evaluate_models
 import os
 import yaml
 import numpy as np
+from experiment.finetuning.utils import Sweep, param_dict_from_model_output
 
 from hyperopt import fmin, Trials, tpe, STATUS_OK
 
 
 
 # pick a basin
-def pick_a_basin(model: TrainedModel):
+def pick_a_basin(model: TrainedModel, lower: float, higher: float):
     df = pd.read_csv(model.get_eval_metrics_file(period='validation'), dtype={'basin':str})
-    cutoff = 0.0
-    basin_data = df.loc[df['NSE'] > cutoff].sample(n=1)
+
+    basin_data = df.loc[(df['NSE'] <= higher) & (df['NSE'] >= lower)].sample(n=1)
     basin = basin_data.basin.iloc[0]
     nse = basin_data.NSE.iloc[0]
     update_files(model=model, basin=basin)
@@ -94,9 +95,17 @@ def finetune_model(args):
 
 
 
-def find_best_finetuning_params(search_space: dict, max_evals=10):
+def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_evals=10) -> Sweep:
    
     trials = Trials()
-    best = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
-    
-    return best
+    best_params = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
+    # add basin back to best params
+    args = param_dict_from_model_output(best_params, search_space['basin'])
+
+    finetuning_data = finetune_model(args)
+    finetuned_model = finetuning_data['model']
+
+    # store model, finetuned model, and best_params
+    sweep = Sweep(best_params=best_params, base_model=model, finetuned_model=finetuned_model, basin=search_space['basin'])
+
+    return sweep
