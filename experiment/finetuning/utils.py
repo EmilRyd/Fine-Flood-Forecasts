@@ -26,12 +26,13 @@ def make_unique(filename):
 # classes
 class Sweep:
 
-    def __init__(self, best_params: dict, base_model: TrainedModel, finetuned_model: TrainedModel, basin: str):
+    def __init__(self, best_params: dict, base_model: TrainedModel, finetuned_model: TrainedModel, search_space: dict):
 
         self.best_params = best_params
         self.base_model = base_model
         self.finetuned_model = finetuned_model
-        self.basin = basin
+        self.basin = search_space['basin']
+        self.search_space = search_space
 
     def save(self) -> Path:
         results_dir = Path(__file__).parent / 'results'
