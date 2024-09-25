@@ -64,6 +64,8 @@ def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark: 
             df = df[df.basin.isin(basins)].reset_index(drop=True)
             assert not df.empty, 'wrong basin!'
 
+        assert set(basins) == set(df.basin) or (len(basins) == 0 and len(df.basin) == NUM_BASINS), f'All basins are not in dataframe, or vice versa. df_length = {len(df.basin)}, basins_length = {len(basins)}'
+
         df.drop(columns='basin', inplace=True)
 
         # average across the columns

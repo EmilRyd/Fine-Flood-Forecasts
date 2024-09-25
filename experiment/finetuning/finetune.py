@@ -106,7 +106,7 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
     finetuned_model = finetuning_data['model']
 
     # store model, finetuned model, and best_params
-    sweep = Sweep(best_params=best_params, base_model=model, finetuned_model=finetuned_model, search_space=search_space)
+    sweep = Sweep(best_params=best_params, base_model=model, finetuned_model=finetuned_model, search_space=search_space, max_evals=max_evals)
 
     # perform evaluation on all basins
     if evaluate:
