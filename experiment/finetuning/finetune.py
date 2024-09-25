@@ -54,7 +54,7 @@ def finetune_model(args):
     basin = args['basin']
 
     # sanity check on args
-    assert args['epochs'] > 0, f"Number of epochs is invalid: {args['epochs']}"
+    #assert args['epochs'] > 0, f"Number of epochs is invalid: {args['epochs']}"
     
     # get base cfg
     yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
@@ -71,7 +71,7 @@ def finetune_model(args):
                 if value:
                     modules.append(key)
             elif (key == 'epochs'):
-                data[key] = int(value)
+                data[key] = int(value) +  1 # make this cleaner mayber
             else:
                 data[key] = value
 
