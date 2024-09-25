@@ -28,20 +28,25 @@ if __name__ == '__main__':
 
     # define hyperparameter search space
     search_space = {
-        'basin': basin,
-        'epochs': hp.choice('epochs', [1,2,3,4]),
+        'epochs': 1 + hp.randint('epochs', 5),
         'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
-        'lstm': hp.choice('lstm', [True, False]),
+        'lstm': hp.choice('lstm', [False, True]),
         'loss': 'NSE'
     }
 
+
+    basins = []
     for idx, lower in enumerate(lowers):
         # pick basin
         basin, _ = pick_a_basin(model=model, lower=lower, higher=highers[idx])
 
-        # finetune a model
+        search_space['basin'] = basin
+
+        # finetune a model  
         sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=2)
         sweep_results = sweep.save()
 
         # plot performance
         perform_experiments(sweep_results)
+
+    print(basins)
