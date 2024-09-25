@@ -20,15 +20,15 @@ if __name__ == '__main__':
     # select base model, start with SOTA Camels model
     model = TrainedModel(TrainedModelID.SOTA_20)
 
-    mean = 0.79 # taken raw from the sota model performance
+    mean = 0.76 # taken raw from the sota model performance
     threshold = 0.05
 
-    lowers = [0,mean-threshold, mean+threshold]
-    highers = [mean-threshold, mean+threshold, 1]
+    lowers = [0,mean-threshold, 0.85]
+    highers = [0.5, mean+threshold, 1]
 
     # define hyperparameter search space
     search_space = {
-        'epochs': 1 + hp.randint('epochs', 5),
+        'epochs': 1 + hp.randint('epochs', 10),
         'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
         'lstm': hp.choice('lstm', [False, True]),
         'loss': 'NSE'
@@ -39,11 +39,11 @@ if __name__ == '__main__':
     for idx, lower in enumerate(lowers):
         # pick basin
         basin, _ = pick_a_basin(model=model, lower=lower, higher=highers[idx])
-
+        basins.append(basin)
         search_space['basin'] = basin
 
         # finetune a model  
-        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=2)
+        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=10)
         sweep_results = sweep.save()
 
         # plot performance
