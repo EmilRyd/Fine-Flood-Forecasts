@@ -88,7 +88,7 @@ def finetune_model(args):
 
         finetuned_model = TrainedModel(config_file_path_or_experiment_name=config_file_path)
 
-        v_df = evaluate_models([finetuned_model], basins=[basin], include_benchmark=False, period='validation')
+        v_df = evaluate_models([finetuned_model], basins=[basin], include_benchmark=False, period='validation', ignore_previous_metrics=True)
     
     # return negative validation score
     return {'loss': -float(v_df.iloc[0][f'basin_{basin}']), 'status': STATUS_OK, 'model': finetuned_model}
@@ -110,6 +110,6 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
 
     # perform evaluation on all basins
     if evaluate:
-        evaluate_models(models=[sweep.base_model, sweep.finetuned_model], bolden_values=True, include_benchmark=False, ignore_previous_metrics=True)
+        evaluate_models(models=[sweep.finetuned_model], bolden_values=True, include_benchmark=False, ignore_previous_metrics=True)
     
     return sweep
