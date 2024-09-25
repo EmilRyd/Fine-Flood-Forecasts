@@ -156,6 +156,14 @@ class TrainedModel:
         epoch_string = get_epoch_string(self.epoch)
         return (self.run_dir / period / f'model_epoch{epoch_string}' / f'{period}_metrics.csv') 
 
+    def to_dict(self) -> dict:
+        return {
+            'best_params': self.best_params,
+            'base_model': self.base_model,
+            'finetuned_model': self.finetuned_model,
+            'basin': self.basin,
+            'search_space': self.search_space
+        }
 class TrainedModelID(StrEnum):
     EMB_20 = 'embedding_experiment_20'
     EMB_10 = 'embedding_experiment_10'

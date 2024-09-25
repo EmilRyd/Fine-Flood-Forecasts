@@ -1,7 +1,7 @@
 # utils for finetuning experiment
 from pathlib import Path
 import os
-import json
+import pickle as p
 
 from experiment.utils import TrainedModel
 
@@ -36,7 +36,7 @@ class Sweep:
 
     def save(self) -> Path:
         results_dir = Path(__file__).parent / 'results'
-        unique_filename = make_unique(results_dir / f'{self.base_model}_{self.basin}.json')
-        with open(unique_filename, 'w') as f:
-            json.dump(self, f, indent=4)
+        unique_filename = make_unique(results_dir / f'{self.base_model.config_id}_{self.basin}.pkl')
+        with open(unique_filename, 'wb') as f:
+            p.dump(self, f)
         return unique_filename

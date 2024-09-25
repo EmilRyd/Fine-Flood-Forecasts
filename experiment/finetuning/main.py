@@ -8,14 +8,10 @@ from experiment.finetuning.experiments import perform_experiments
 def main(model: TrainedModel, basin: str, search_space: dict):
 
     # run the finetuning
-    sweep = find_best_finetuning_params(search_space=search_space, model=model)
+    sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=2)
     sweep_results = sweep.save()
 
     perform_experiments(sweep_results)
-
-
-    # experiment #2, compare the ratios of training and validation over the training and the finetuning period
-    
 
 if __name__ == '__main__':
 

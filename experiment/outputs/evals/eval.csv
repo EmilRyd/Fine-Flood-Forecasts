@@ -1,7 +1,7 @@
-,Metric,sota_20,basin_09035800
-0,NSE (mean),0.86,<b>0.87</b>
-1,KGE (mean),0.66,<b>0.68</b>
-2,MSE (mean),0.35,<b>0.34</b>
-3,NSE (median),0.86,<b>0.87</b>
-4,KGE (median),0.66,<b>0.68</b>
-5,MSE (median),0.35,<b>0.34</b>
+,Metric,basin_09505800
+0,NSE (mean),0.6710798442363739
+1,KGE (mean),0.5915177128639011
+2,MSE (mean),0.1779994517564773
+3,NSE (median),0.6710798442363739
+4,KGE (median),0.5915177128639011
+5,MSE (median),0.1779994517564773

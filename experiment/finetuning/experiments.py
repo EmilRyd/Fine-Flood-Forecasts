@@ -1,6 +1,6 @@
 # finetuning experiment code
 from pathlib import Path
-import json
+import pickle as p
 from IPython.core.display import display, HTML
 
 from experiment.eval import evaluate_models
@@ -20,12 +20,13 @@ def show_performance_comparison(models: list, basins: list = []):
 
 def perform_experiments(sweep_results: Path):
 
-    with open(sweep_results, 'r') as f:
-        sweep = json.load(f)
+    with open(sweep_results, 'rb') as f:
+        sweep = p.load(f)
     
     # experiment #1, compare across all basins
-    show_performance_comparison(models=[sweep.model, sweep.finetuned_model])
+    show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model])
 
     # experiment #0, compare for the finetuned basin
-    show_performance_comparison(models=[sweep.model, sweep.finetuned_model], basins=[sweep.basin])
+    show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model], basins=[sweep.basin])
     
+    # experiment #2, compare the ratios of training and validation over the training and the finetuning period    

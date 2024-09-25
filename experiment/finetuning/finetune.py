@@ -95,7 +95,7 @@ def finetune_model(args):
 
 
 
-def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_evals=10) -> Sweep:
+def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_evals=10, evaluate=True) -> Sweep:
    
     trials = Trials()
     best_params = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
@@ -108,4 +108,8 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
     # store model, finetuned model, and best_params
     sweep = Sweep(best_params=best_params, base_model=model, finetuned_model=finetuned_model, search_space=search_space)
 
+    # perform evaluation on all basins
+    if evaluate:
+        evaluate_models(models=[sweep.base_model, sweep.finetuned_model], bolden_values=True, include_benchmark=False, ignore_previous_metrics=True)
+    
     return sweep

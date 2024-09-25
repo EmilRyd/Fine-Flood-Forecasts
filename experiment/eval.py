@@ -99,7 +99,7 @@ def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark: 
 
 
 
-def evaluate_models(models: list, basins: list = [], include_benchmark: bool = True, period='test', bolden_values=False):
+def evaluate_models(models: list, basins: list = [], include_benchmark: bool = True, period='test', bolden_values=False, ignore_previous_metrics=False):
     """Takes list of TrainedModel objects and evalutes them against each other"""
     models_dict = {}
     for model in models:
@@ -108,10 +108,10 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
 
         # if any models are not evaluted yet, do so
         metrics_file = model.get_eval_metrics_file(period=period)
-        if os.path.exists(metrics_file):
+        if os.path.exists(metrics_file) and not ignore_previous_metrics:
             # check that the basins are the same, or basins are all for both
             df = pd.read_csv(metrics_file, dtype={'basin':str})
-            if not (set(df.basin.tolist()) == set(basins) or (len(df.basin) == NUM_BASINS and len(basins)==0)):  
+            if not (set(basins).issubset(set(df.basin.tolist()))  or (len(df.basin) == NUM_BASINS and len(basins)==0)):  
                 eval_run(model.run_dir, period=period, epoch=model.epoch)
         else:
             eval_run(model.run_dir, period=period, epoch=model.epoch)
