@@ -51,6 +51,9 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
 def finetune_model(args):
 
     basin = args['basin']
+
+    # sanity check on args
+    assert args['epochs'] > 0, f"Number of epochs is invalid: {args['epochs']}"
     
     # get base cfg
     yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'

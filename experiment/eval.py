@@ -111,12 +111,11 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
         if os.path.exists(metrics_file):
             # check that the basins are the same, or basins are all for both
             df = pd.read_csv(metrics_file, dtype={'basin':str})
-            if set(df.basin.tolist()) == set(basins) or (len(df.basin) == NUM_BASINS and len(basins)==0):  
-                models_dict[model.config_id] = metrics_file
-            else:
+            if not (set(df.basin.tolist()) == set(basins) or (len(df.basin) == NUM_BASINS and len(basins)==0)):  
                 eval_run(model.run_dir, period=period, epoch=model.epoch)
         else:
             eval_run(model.run_dir, period=period, epoch=model.epoch)
+        models_dict[model.config_id] = metrics_file
         
     # evalauate the model csvs
     df = evalute_model_csvs(models_dict, basins=basins, include_benchmark=include_benchmark, bolden_values=bolden_values)
@@ -125,8 +124,3 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
     df.to_csv(os.path.join(eval_dir, 'eval.csv'))
 
     return df
-
-
-model = TrainedModel(TrainedModelID.SOTA_20)
-
-evaluate_models([model], include_benchmark=False, period='validation')

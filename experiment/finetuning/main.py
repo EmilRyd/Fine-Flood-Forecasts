@@ -14,18 +14,30 @@ def param_dict_from_model_output(best_params: dict, basin: str):
     args['lstm'] = best_params['lstm']
     return args
     
+def show_performance_comparison(models: list, basins: list = []):
+    if len(basins) == 0:
+        # compare how the model performs on all basins
+        df = evaluate_models(models=models, bolden_values=True, include_benchmark=False)
+    else:
+        # compare finetuned model and model's performance on the selected basin
+        df = evaluate_models(models=models, basins=basins, bolden_values=True, include_benchmark=False)
 
-def main():
+    # display the comparison
+    display(HTML(df.to_html(escape=False)))
+   
+def main(basin: str = None):
 
     # select base model, start with SOTA Camels model
     model = TrainedModel(TrainedModelID.SOTA_20)
-    # pick a basin and get its current nse
-    basin, _ = pick_a_basin(model=model)
+
+    if basin is None:
+        # pick a basin and get its current nse
+        basin, _ = pick_a_basin(model=model)
     
     # define hyperparameter search space
     search_space = {
         'basin': basin,
-        'epochs': hp.choice('epochs', [1]),
+        'epochs': hp.choice('epochs', [1,2,3,4]),
         'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
         'lstm': hp.choice('lstm', [True, False]),
         'loss': 'NSE'
@@ -40,21 +52,17 @@ def main():
     finetuning_data = finetune_model(args)
     finetuned_model = finetuning_data['model']
 
-    # TODO: Check that validation is happening properly, they are not just reusing old validation data fom previous runs?
+    # TODO: order is currently necessary so that vlaidation does happen across all basins. fi to avoid doing this hack.
 
-    # compare finetuned model and model
-    basin_df = evaluate_models(models=[model, finetuned_model], basins=[basin], bolden_values=True, include_benchmark=False)
+    # experiment #1, compare across all basins
+    show_performance_comparison(models=[model, finetuned_model])
 
-    # display the comparison
-    display(HTML(basin_df.to_html(escape=False)))
+    # experiment #0, compare for the finetuned basin
+    show_performance_comparison(models=[model, finetuned_model], basins=[basin])
 
-    # now compare how the model performs on all basins
-    all_df = evaluate_models(models=[model, finetuned_model], bolden_values=True)
-
-    # display the comparison
-    display(HTML(all_df.to_html(escape=False)))
-
-    # compare the ratios of training and validation over the training and the finetuning period
+    # experiment #2, compare the ratios of training and validation over the training and the finetuning period
+    
 
 if __name__ == '__main__':
+
     main()
