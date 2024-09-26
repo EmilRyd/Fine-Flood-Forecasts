@@ -9,7 +9,7 @@ from experiment.utils import TrainedModel
 def param_dict_from_model_output(best_params: dict, basin: str):
     args = {}
     args['basin'] = basin
-    args['epochs'] = int(best_params['epochs'])
+    args['epochs'] = int(best_params['epochs']) + 5
     args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
     args['loss'] = 'NSE'
     args['lstm'] = best_params['lstm']
