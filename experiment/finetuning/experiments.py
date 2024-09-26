@@ -9,8 +9,9 @@ from experiment.finetuning.utils import load_pkl, Sweep, get_training_losses
 import matplotlib.pyplot as plt
 
 import os
-from experiment.utils import TrainedModel
+from experiment.utils import TrainedModel, TrainedModelID
 import pandas as pd
+import numpy as np
 
 def show_performance_comparison(models: list, basins: list = []):
     if len(basins) == 0:
@@ -64,8 +65,7 @@ def performance_comparison_for_basin(sweep: Sweep):
     fine_test_score = float(fine_test_basin.iloc[0][f'basin_{sweep.basin}'])
     base_test_score = float(base_test_basin.iloc[0][f'{sweep.base_model.config_id}'])
     test_delta_basin = fine_test_score - base_test_score
-    if val_delta_basin > 0.5:
-        print(sweep.basin)
+
     return {'val_basin': val_delta_basin, 'test_basin': test_delta_basin, 'test_all': test_delta_all}
 
 def performance_comparison(sweeps: list):
@@ -91,24 +91,32 @@ def get_loss_ratios(model: TrainedModel) -> pd.Series:
 
     ratio_df = pd.merge(left=train_df, right=val_df, on='step')
     ratios = ratio_df.val/ratio_df.train
-    
+    ratios = ratios.set_axis(ratio_df['step'])
     return ratios
 
-def loss_ratio_comparison(sweeps: list):
+def loss_ratio_comparison(sweeps: list, use_base=False):
     # compare the loss ratio of the base model with the loss ratios from the finetuning
     
-    # assuming the same base model
-    assert len(set([sweep.base_model.config_id for sweep in sweeps])) == 1, f'more than 1 unique base model ({len(set([sweep.base_model.config_id for sweep in sweeps]))} to be exact) for finetuned models. This behavior is not accounted for yet in implementation'
+    if use_base:
+        # assuming the same base model
+        assert len(set([sweep.base_model.config_id for sweep in sweeps])) == 1, f'more than 1 unique base model ({len(set([sweep.base_model.config_id for sweep in sweeps]))} to be exact) for finetuned models. This behavior is not accounted for yet in implementation'
 
-    # find the ratio for the base model
-    base_model = sweeps[0].base_model
-    
+        # find the ratio for the base model
+        base_model = sweeps[0].base_model
+    else:
+        base_model = TrainedModel(TrainedModelID.SOTA)    
     base_ratios = get_loss_ratios(model=base_model)
-    plt.plot(base_ratios)
+    plt.plot(base_ratios.index, base_ratios, label='base', c='b')
+    fine_ratios = pd.DataFrame()
     for sweep in sweeps:
         fine_ratio_series = get_loss_ratios(sweep.finetuned_model)
-        plt.plot(fine_ratio_series)
+        fine_ratios = pd.concat([fine_ratios, fine_ratio_series], axis=1)
+        plt.plot(fine_ratio_series.index, fine_ratio_series, alpha=0.2, c='k')
+
+    ave_ratios = fine_ratios.mean(axis=1).sort_index()
+    plt.plot(ave_ratios.index, ave_ratios, label='average of finetuned models', c='r')
     plt.legend()
+
     plt.show()
 
     

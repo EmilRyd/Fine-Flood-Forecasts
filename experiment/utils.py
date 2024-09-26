@@ -169,3 +169,4 @@ class TrainedModelID(StrEnum):
     EMB_10 = 'embedding_experiment_10'
     SOTA_10 = 'sota_10'
     SOTA_20 = 'sota_20'
+    SOTA = 'sota'
