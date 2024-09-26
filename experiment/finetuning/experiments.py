@@ -5,7 +5,12 @@ from IPython.core.display import display, HTML
 
 from experiment.eval import evaluate_models
 
+from experiment.finetuning.utils import load_pkl, Sweep, get_training_losses
+import matplotlib.pyplot as plt
 
+import os
+from experiment.utils import TrainedModel
+import pandas as pd
 
 def show_performance_comparison(models: list, basins: list = []):
     if len(basins) == 0:
@@ -27,24 +32,98 @@ def perform_experiments(sweep_results: Path):
     show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model])
 
     #maybe comapre the validatio loss improvement as welL, for sanity
-    
+
 
     # experiment #0, compare for the finetuned basin
     show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model], basins=[sweep.basin])
     
     # experiment #2, compare the ratios of training and validation over the training and the finetuning period    
+def performance_comparison_for_basin(sweep: Sweep):
+    # load the sweep
+    fine_validation_score = -min(sweep.trials.losses())
+    
+    base_val = evaluate_models([sweep.base_model], basins=[sweep.basin], include_benchmark=False, period='validation', ignore_previous_metrics=False)
+    base_test = evaluate_models([sweep.base_model], include_benchmark=False, period='test', ignore_previous_metrics=False)
+    base_test_basin = evaluate_models([sweep.base_model], basins=[sweep.basin], include_benchmark=False, period='test', ignore_previous_metrics=False)
+    
+    fine_test = evaluate_models([sweep.finetuned_model], include_benchmark=False, period='test', ignore_previous_metrics=False)
+    fine_test_basin = evaluate_models([sweep.finetuned_model], basins=[sweep.basin], include_benchmark=False, period='test', ignore_previous_metrics=False)
 
-from experiment.utils import TrainedModel, TrainedModelID
-from hyperopt import hp
-import os
-from experiment.finetuning.utils import load_pkl
+    
+    # for all basins (only test set)
+    fine_test_score = float(fine_test.iloc[0][f'basin_{sweep.basin}'])
+    base_test_score = float(base_test.iloc[0][f'{sweep.base_model.config_id}'])
+    test_delta_all = fine_test_score - base_test_score
+    
+    # for individual basin
+
+    # validation
+    val_delta_basin = fine_validation_score - float(base_val.iloc[0][f'{sweep.base_model.config_id}'])
+    
+    # test
+    fine_test_score = float(fine_test_basin.iloc[0][f'basin_{sweep.basin}'])
+    base_test_score = float(base_test_basin.iloc[0][f'{sweep.base_model.config_id}'])
+    test_delta_basin = fine_test_score - base_test_score
+    if val_delta_basin > 0.5:
+        print(sweep.basin)
+    return {'val_basin': val_delta_basin, 'test_basin': test_delta_basin, 'test_all': test_delta_all}
+
+def performance_comparison(sweeps: list):
+    # iterate over the sweeps and plot the comparison
+    delta_dict = {'val_basin': [], 'test_basin': [], 'test_all': []}
+    for sweep in sweeps:
+        deltas = performance_comparison_for_basin(sweep)
+        for key, value in delta_dict.items():
+            
+            delta_dict[key] = value + [deltas[key]]
+    for key, value in delta_dict.items():
+        plt.hist(value, bins=20)
+        plt.title(key)
+        plt.show()
+
+def get_loss_ratios(model: TrainedModel) -> pd.Series:
+
+     # maybe this should go into a more general utils file?
+    train_df, val_df = get_training_losses(model)
+
+    val_df.rename(columns={'value': 'val'}, inplace=True)
+    train_df.rename(columns={'value': 'train'}, inplace=True)
+
+    ratio_df = pd.merge(left=train_df, right=val_df, on='step')
+    ratios = ratio_df.val/ratio_df.train
+    
+    return ratios
+
+def loss_ratio_comparison(sweeps: list):
+    # compare the loss ratio of the base model with the loss ratios from the finetuning
+    
+    # assuming the same base model
+    assert len(set([sweep.base_model.config_id for sweep in sweeps])) == 1, f'more than 1 unique base model ({len(set([sweep.base_model.config_id for sweep in sweeps]))} to be exact) for finetuned models. This behavior is not accounted for yet in implementation'
+
+    # find the ratio for the base model
+    base_model = sweeps[0].base_model
+    
+    base_ratios = get_loss_ratios(model=base_model)
+    plt.plot(base_ratios)
+    for sweep in sweeps:
+        fine_ratio_series = get_loss_ratios(sweep.finetuned_model)
+        plt.plot(fine_ratio_series)
+    plt.legend()
+    plt.show()
+
+    
 
 # reading resluts and performing experiments on them
 
 if __name__ == '__main__':
     results_dir = Path(__file__).parent / 'results'
+    sweeps = []
     for filename in os.listdir(results_dir):
         sweep_results = os.path.join(results_dir, filename)
         if os.path.isfile(sweep_results):
-            perform_experiments(sweep_results=sweep_results)
+            sweep = load_pkl(sweep_results)
+            sweeps.append(sweep)
+    
+    performance_comparison(sweeps)
+    loss_ratio_comparison(sweeps)
 
