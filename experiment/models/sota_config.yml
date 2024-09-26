@@ -1,7 +1,7 @@
 # --- Experiment configurations --------------------------------------------------------------------
 
 # experiment name, used as folder name
-experiment_name: sota_20
+experiment_name: sota
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
 train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
@@ -22,10 +22,10 @@ device: cuda:0
 # --- Validation configuration ---------------------------------------------------------------------
 
 # specify after how many epochs to perform validation
-validate_every: 3
+validate_every: 1
 
 # specify how many random basins to use for validation
-validate_n_random_basins: 1
+validate_n_random_basins: 531
 
 # specify which metrics to calculate during validation (see neuralhydrology.evaluation.metrics)
 # this can either be a list or a dictionary. If a dictionary is used, the inner keys must match the name of the
@@ -81,7 +81,7 @@ regularization:
 # specify learning rates to use starting at specific epochs (0 is the initial learning rate)
 learning_rate:
   0: 1e-3
-  20: 5e-4
+  10: 5e-4
   25: 1e-4
 
 # Mini-batch size

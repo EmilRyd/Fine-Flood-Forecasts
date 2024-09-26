@@ -12,16 +12,17 @@ import yaml
 from experiment.finetuning.utils import Sweep, param_dict_from_model_output
 import logging
 from hyperopt import fmin, Trials, tpe, STATUS_OK
-
+from datetime import datetime
 
 
 # pick a basin
 def pick_a_basin(model: TrainedModel, lower: float = None, higher: float = None):
     df = pd.read_csv(model.get_eval_metrics_file(period='validation'), dtype={'basin':str})
+    c_time = int(datetime.now().timestamp())
     if lower is None or higher is None:
-        basin_data = df.sample(n=1)
+        basin_data = df.sample(n=1, random_state=c_time)
     else:
-        basin_data = df.loc[(df['NSE'] <= higher) & (df['NSE'] >= lower)].sample(n=1)
+        basin_data = df.loc[(df['NSE'] <= higher) & (df['NSE'] >= lower)].sample(n=1, random_state=c_time)
 
     basin = basin_data.basin.iloc[0]
     nse = basin_data.NSE.iloc[0]

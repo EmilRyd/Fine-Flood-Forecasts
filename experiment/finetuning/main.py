@@ -10,8 +10,8 @@ model = TrainedModel(TrainedModelID.SOTA_20)
 # define hyperparameter search space
 search_space = {
     # TODO: sort out this 5 in finetune(args) code
-    'epochs': 5 + hp.randint('epochs', 5),
-    'learning_rate': {0: hp.uniform('lr1', 1e-4, 1e-3), 5: hp.uniform('lr2', 1e-5, 1e-4)},
+    'epochs': 7 + hp.randint('epochs', 5),
+    'learning_rate': {0: hp.uniform('lr1', 3e-4, 3e-3), 5: hp.uniform('lr2', 3e-5, 3e-4)},
     'lstm': hp.choice('lstm', [False, True]),
     'loss': hp.choice('loss', ['NSE', 'RMSE', 'MSE'])
 }
@@ -26,7 +26,7 @@ def finetune_on_n_basins(n=500):
         search_space['basin'] = basin
 
         # finetune a model  
-        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=25)
+        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=25, evaluate=True)
         sweep_results = sweep.save()
         sweeps.append(sweep_results)
     

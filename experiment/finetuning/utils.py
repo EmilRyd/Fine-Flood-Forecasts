@@ -9,7 +9,7 @@ from experiment.utils import TrainedModel
 def param_dict_from_model_output(best_params: dict, basin: str):
     args = {}
     args['basin'] = basin
-    args['epochs'] = int(best_params['epochs']) + 5
+    args['epochs'] = int(best_params['epochs']) + 7
     args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
     args['loss'] = 'NSE'
     args['lstm'] = best_params['lstm']
@@ -22,6 +22,11 @@ def make_unique(filename):
         filename = f"{name}_{counter}{extension}"
         counter += 1
     return filename
+
+def load_pkl(filename: Path):
+    with open(filename, 'rb') as f:
+        data = p.load(f)
+    return data
 
 # classes
 class Sweep:

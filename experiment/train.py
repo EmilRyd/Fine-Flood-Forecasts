@@ -29,3 +29,8 @@ def train_models(config_paths: list) -> list:
         models.append(trained_model)
 
     return models
+
+if __name__ == '__main__':
+    config_file_path = Path(__file__).parent / 'models' / 'sota_config.yml'
+
+    model = train_model(config_file_path)
