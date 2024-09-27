@@ -24,20 +24,18 @@ def show_performance_comparison(models: list, basins: list = []):
     # display the comparison
     display(HTML(df.to_html(escape=False)))
 
-def perform_experiments(sweep_results: Path):
+def plot_metrics(sweeps: list):
 
-    with open(sweep_results, 'rb') as f:
-        sweep = p.load(f)
-    
-    # experiment #1, compare across all basins
-    show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model])
+    for sweep in sweeps:
+        # experiment #1, compare across all basins
+        show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model])
 
-    #maybe comapre the validatio loss improvement as welL, for sanity
+        #maybe comapre the validatio loss improvement as welL, for sanity
 
 
-    # experiment #0, compare for the finetuned basin
-    show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model], basins=[sweep.basin])
-    
+        # experiment #0, compare for the finetuned basin
+        show_performance_comparison(models=[sweep.base_model, sweep.finetuned_model], basins=[sweep.basin])
+        
     # experiment #2, compare the ratios of training and validation over the training and the finetuning period    
 def performance_comparison_for_basin(sweep: Sweep):
     # load the sweep
@@ -77,8 +75,12 @@ def performance_comparison(sweeps: list):
             
             delta_dict[key] = value + [deltas[key]]
     for key, value in delta_dict.items():
-        plt.hist(value, bins=20)
-        plt.title(key)
+        plt.xlim(left=-0.06, right=0.06)
+        plt.hist(value, bins=100)
+        ave = np.mean(value)
+        median = np.median(value)
+        std = np.std(value)
+        plt.title(f'{key}, average delta: {ave:.2f} +- {std:.2f}, median delta: {median:.2f}')
         plt.show()
 
 def get_loss_ratios(model: TrainedModel) -> pd.Series:
@@ -110,6 +112,11 @@ def loss_ratio_comparison(sweeps: list, use_base=False):
     fine_ratios = pd.DataFrame()
     for sweep in sweeps:
         fine_ratio_series = get_loss_ratios(sweep.finetuned_model)
+        # shift by the base_model number of epochs
+        fine_ratio_series.loc[0] = base_ratios.loc[len(base_ratios)-1]
+
+        fine_ratio_series.index = fine_ratio_series.index + base_ratios.index.max()
+        fine_ratio_series = fine_ratio_series.sort_index()
         fine_ratios = pd.concat([fine_ratios, fine_ratio_series], axis=1)
         plt.plot(fine_ratio_series.index, fine_ratio_series, alpha=0.2, c='k')
 
@@ -124,14 +131,31 @@ def loss_ratio_comparison(sweeps: list, use_base=False):
 # reading resluts and performing experiments on them
 
 if __name__ == '__main__':
+    # "parameters"
+    # best val_delta, test_delta, '11151300'
+    # test_delta > 0 ['08164300','12041200','11151300','11230500','06911900','05508805','02215100','01144000','11237500','04015330','05495000','06447500','04221000','14096850','08271000','14222500','06917000','03460000','02046000','01580000']
+    # val_delta > 0.01 ['06406000','08164300','12041200','11151300','04213075','11230500','07299670','03049800','02215100','01144000','02111500','04221000','02372250','09430600','08271000','06221400','14222500','06917000','03460000','06440200','02046000','13235000','01580000','09505800']
+    basins = ['11151300']
+    base_model_id = TrainedModelID.SOTA_20
+
     results_dir = Path(__file__).parent / 'results'
     sweeps = []
-    for filename in os.listdir(results_dir):
-        sweep_results = os.path.join(results_dir, filename)
-        if os.path.isfile(sweep_results):
+    
+    if len(basins) == 0:
+        
+        for filename in os.listdir(results_dir):
+            sweep_results = os.path.join(results_dir, filename)
+            if os.path.isfile(sweep_results):
+                sweep = load_pkl(sweep_results)
+                sweeps.append(sweep)
+    else:
+        for basin in basins:
+            sweep_results = results_dir / f'{base_model_id}_{basin}.pkl'
             sweep = load_pkl(sweep_results)
             sweeps.append(sweep)
-    
     performance_comparison(sweeps)
     loss_ratio_comparison(sweeps)
+
+    if basins:
+        plot_metrics(sweeps)
 
