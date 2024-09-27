@@ -22,7 +22,7 @@ def show_performance_comparison(models: list, basins: list = []):
         df = evaluate_models(models=models, basins=basins, bolden_values=True, include_benchmark=False)
 
     # display the comparison
-    display(HTML(df.to_html(escape=False)))
+    display(HTML(data=df.to_html(escape=False)))
 
 def plot_metrics(sweeps: list):
 

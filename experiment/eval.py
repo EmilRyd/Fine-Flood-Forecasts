@@ -43,7 +43,7 @@ def bold_better(row):
     
     dists = [abs(val-goal) for val in vals]
     best_idx = np.argmin(dists)
-    vals = [round(val, 2) for val in vals]
+    vals = [round(val, 3) for val in vals]
     
     new_row = [f"<b>{val}</b>" if idx==best_idx else val for idx, val in enumerate(vals)]
     return new_row

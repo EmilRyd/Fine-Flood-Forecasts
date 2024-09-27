@@ -33,7 +33,7 @@ def load_pkl(filename: Path):
         data = p.load(f)
     return data
 
-def get_training_losses(model: TrainedModel) -> dict:
+def get_training_losses(model: TrainedModel) -> tuple:
     
     # returns training and validation losses for a trained model
     assert model.cfg.log_tensorboard, f'Tensorboard logging set to {model.cfg.log_tensorboard} for this basin, such behavior not supported yet'
