@@ -5,10 +5,10 @@ import pickle as p
 
 import pandas as pd
 from hyperopt import Trials
+from sympy import Union
 from tensorboard.backend.event_processing import event_accumulator
 
 from experiment.utils import TrainedModel
-
 
 # functions
 def param_dict_from_model_output(best_params: dict, basin: str):
@@ -73,4 +73,4 @@ class Sweep:
         unique_filename = make_unique(results_dir / f'{self.base_model.config_id}_{self.basin}.pkl')
         with open(unique_filename, 'wb') as f:
             p.dump(self, f)
-        return unique_filename
+        return Path(unique_filename)

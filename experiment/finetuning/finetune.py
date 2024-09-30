@@ -51,9 +51,7 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
     with open(basin_file_path, 'w') as fp:
         fp.write(basin) 
 
-def finetune_model(args):
-
-    basin = args['basin']
+def cfg_from_args(args):
 
     # sanity check on args
     assert args['epochs'] > 0, f"Number of epochs is invalid: {args['epochs']}"
@@ -77,6 +75,12 @@ def finetune_model(args):
                 data[key] = value
 
     data['finetune_modules'] = modules
+    return data
+
+def finetune_model(args):
+    basin = args['basin']
+    data = cfg_from_args(args)
+    
     # finetune using temporary yaml file
     #
     with tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f:
@@ -101,10 +105,7 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
     trials = Trials()
     best_params = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
     # add basin back to best params
-    args = param_dict_from_model_output(best_params, search_space['basin'])
-
-    finetuning_data = finetune_model(args)
-    finetuned_model = finetuning_data['model']
+    finetuned_model = trials.best_trial['result']['model']
 
     # store model, finetuned model, and best_params
     sweep = Sweep(best_params=best_params, base_model=model, 

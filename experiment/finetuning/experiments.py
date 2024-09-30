@@ -5,7 +5,8 @@ from IPython.core.display import display, HTML
 
 from experiment.eval import evaluate_models
 
-from experiment.finetuning.utils import load_pkl, Sweep, get_training_losses
+from experiment.finetuning.finetune import cfg_from_args
+from experiment.finetuning.utils import load_pkl, Sweep, get_training_losses, param_dict_from_model_output
 import matplotlib.pyplot as plt
 
 import os
@@ -42,6 +43,11 @@ def performance_comparison_for_basin(sweep: Sweep):
     fine_validation_score = -min(sweep.trials.losses())
     
     base_val = evaluate_models([sweep.base_model], basins=[sweep.basin], include_benchmark=False, period='validation', ignore_previous_metrics=False)
+    
+    # sanity check on the validation losses
+    fine_val_basin = evaluate_models([sweep.finetuned_model], basins=[sweep.basin], include_benchmark=False, period='validation', ignore_previous_metrics=False)
+    assert float(fine_val_basin.iloc[0][f'basin_{sweep.basin}']) == fine_validation_score, f'finetuned model final validation score ({float(fine_val_basin.iloc[0][f"basin_{sweep.basin}"])}) and negative best loss ({fine_validation_score}) do not equal each other'
+    
     base_test = evaluate_models([sweep.base_model], include_benchmark=False, period='test', ignore_previous_metrics=False)
     base_test_basin = evaluate_models([sweep.base_model], basins=[sweep.basin], include_benchmark=False, period='test', ignore_previous_metrics=False)
     
@@ -112,6 +118,7 @@ def loss_ratio_comparison(sweeps: list, use_base=False):
     fine_ratios = pd.DataFrame()
     for sweep in sweeps:
         fine_ratio_series = get_loss_ratios(sweep.finetuned_model)
+        
         # shift by the base_model number of epochs
         fine_ratio_series.loc[0] = base_ratios.loc[len(base_ratios)-1]
 
@@ -151,23 +158,14 @@ def plot_fine_parameters(sweeps: list):
     plt.title('epochs')
     plt.show()
 
-# reading resluts and performing experiments on them
-
-if __name__ == '__main__':
-    # "parameters"
-    # best val_delta, test_delta, '11151300'
-    # test_delta > 0 ['08164300','12041200','11151300','11230500','06911900','05508805','02215100','01144000','11237500','04015330','05495000','06447500','04221000','14096850','08271000','14222500','06917000','03460000','02046000','01580000']
-    # val_delta > 0.01 ['06406000','08164300','12041200','11151300','04213075','11230500','07299670','03049800','02215100','01144000','02111500','04221000','02372250','09430600','08271000','06221400','14222500','06917000','03460000','06440200','02046000','13235000','01580000','09505800']
-    basins = []
-    base_model_id = TrainedModelID.SOTA_20
-
+def get_sweeps(basins: list) -> list[Sweep]:
     results_dir = Path(__file__).parent / 'sweeps'
     sweeps = []
     
     if len(basins) == 0:
         
         for filename in os.listdir(results_dir):
-            sweep_results = os.path.join(results_dir, filename)
+            sweep_results = Path(os.path.join(results_dir, filename))
             if os.path.isfile(sweep_results):
                 sweep = load_pkl(sweep_results)
                 sweeps.append(sweep)
@@ -176,6 +174,11 @@ if __name__ == '__main__':
             sweep_results = results_dir / f'{base_model_id}_{basin}.pkl'
             sweep = load_pkl(sweep_results)
             sweeps.append(sweep)
+    return sweeps
+
+# reading resluts and performing experiments on them
+def run_all_experiments(basins: list = [], base_model_id = TrainedModelID.SOTA_20):
+    sweeps = get_sweeps(basins=basins)
     performance_comparison(sweeps)
     loss_ratio_comparison(sweeps)
 
@@ -183,3 +186,34 @@ if __name__ == '__main__':
     if basins:
         plot_metrics(sweeps)
 
+
+
+if __name__ == '__main__':
+    # sanity check on the finetuned validation losses
+    
+    # get sweeps
+    sweeps = get_sweeps(basins=[])
+    deltas = []
+    for sweep in sweeps:
+        # load the sweep
+        fine_validation_score = -min(sweep.trials.losses())
+        
+        base_val = evaluate_models([sweep.base_model], basins=[sweep.basin], include_benchmark=False, period='validation', ignore_previous_metrics=False)
+        
+        # sanity check on the validation losses
+        fine_val_basin = evaluate_models([sweep.finetuned_model], basins=[sweep.basin], include_benchmark=False, period='validation', ignore_previous_metrics=False)
+        #assert float(fine_val_basin.iloc[0][f'basin_{sweep.basin}']) == fine_validation_score, f'finetuned model final validation score ({float(fine_val_basin.iloc[0][f"basin_{sweep.basin}"])}) and negative best loss ({fine_validation_score}) do not equal each other'
+        delta = float(fine_val_basin.iloc[0][f'basin_{sweep.basin}']) - fine_validation_score
+        deltas.append(delta)
+        best_args = param_dict_from_model_output(sweep.best_params, basin=sweep.basin)
+        best_data = cfg_from_args(best_args)
+        for key, val in best_data.items():
+            if not val == sweep.finetuned_model.cfg._cfg[key]:
+                print(f'{key}')
+
+        
+
+    plt.hist(deltas)
+    plt.title(np.mean(deltas))
+    plt.show()
+        

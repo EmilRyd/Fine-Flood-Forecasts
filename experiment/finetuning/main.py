@@ -2,7 +2,6 @@
 from experiment.finetuning.finetune import pick_a_basin, find_best_finetuning_params
 from hyperopt import hp
 from experiment.utils import TrainedModel, TrainedModelID
-from experiment.finetuning.experiments import perform_experiments
 
  # select base model, start with SOTA Camels model
 model = TrainedModel(TrainedModelID.SOTA_20)
@@ -26,7 +25,7 @@ def finetune_on_n_basins(n=500):
         search_space['basin'] = basin
 
         # finetune a model  
-        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=25, evaluate=True)
+        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=2, evaluate=True)
         sweep_results = sweep.save()
         sweeps.append(sweep_results)
     
@@ -45,8 +44,4 @@ if __name__ == '__main__':
         # print out the test set comparison for across all basins
         # plot the validation and training loss for the base model (already stored in output.log), and the validation and training loss for the finetuning model (already stored in output.log)
     basins, sweeps = finetune_on_n_basins()
-    for idx, sweep in enumerate(sweeps):
-        # plot performance
-        perform_experiments(sweep)
-        print(basins[idx])
     
