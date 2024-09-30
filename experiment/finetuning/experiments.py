@@ -126,7 +126,30 @@ def loss_ratio_comparison(sweeps: list, use_base=False):
 
     plt.show()
 
-    
+def plot_fine_parameters(sweeps: list):
+    lrs_0 = []
+    lrs_5 = []
+    modules = []
+    epochs = []
+    for sweep in sweeps:
+        params = sweep.best_params
+        lrs_0.append(params['lr1'])
+        epochs.append(params['epochs'])
+        lrs_5.append(params['lr2'])
+        modules.append(params['lstm'])
+    plt.hist(lrs_0)
+    plt.title('lr1')
+    plt.show()
+    plt.hist(lrs_5)
+    plt.title('lr2')
+    plt.show()
+    plt.hist(modules)
+    plt.title('lstm or not')
+    plt.show()
+    plt.hist(epochs)
+    print(epochs)
+    plt.title('epochs')
+    plt.show()
 
 # reading resluts and performing experiments on them
 
@@ -135,10 +158,10 @@ if __name__ == '__main__':
     # best val_delta, test_delta, '11151300'
     # test_delta > 0 ['08164300','12041200','11151300','11230500','06911900','05508805','02215100','01144000','11237500','04015330','05495000','06447500','04221000','14096850','08271000','14222500','06917000','03460000','02046000','01580000']
     # val_delta > 0.01 ['06406000','08164300','12041200','11151300','04213075','11230500','07299670','03049800','02215100','01144000','02111500','04221000','02372250','09430600','08271000','06221400','14222500','06917000','03460000','06440200','02046000','13235000','01580000','09505800']
-    basins = ['11151300']
+    basins = []
     base_model_id = TrainedModelID.SOTA_20
 
-    results_dir = Path(__file__).parent / 'results'
+    results_dir = Path(__file__).parent / 'sweeps'
     sweeps = []
     
     if len(basins) == 0:
@@ -156,6 +179,7 @@ if __name__ == '__main__':
     performance_comparison(sweeps)
     loss_ratio_comparison(sweeps)
 
+    plot_fine_parameters(sweeps=sweeps)
     if basins:
         plot_metrics(sweeps)
 
