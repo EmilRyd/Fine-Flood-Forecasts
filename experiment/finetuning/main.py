@@ -14,15 +14,14 @@ if __name__ == '__main__':
 
     # define hyperparameter search space
     search_space = {
-        # TODO: sort out this 5 in finetune(args) code
         'epoch_offset': 1,
-        'additional_epochs': hp.randint('epochs', 100),
+        'additional_epochs': hp.randint('epochs', 2),
         'learning_rate': {0: hp.uniform('lr1', 1e-5, 5e-5), 5: hp.uniform('lr2', 1e-6, 1e-5)},
         'lstm': hp.choice('lstm', [False, True]),
         'loss': hp.choice('loss', ['NSE', 'RMSE', 'MSE'])
     }
 
-    basins, sweeps, run_dir = finetune_on_n_basins(model=model, search_space=search_space)
+    basins, sweeps, run_dir = finetune_on_n_basins(model=model, search_space=search_space, max_evals=3)
     run_all_experiments(basins=basins, run_dir=run_dir)
 
     # pick 3 basins

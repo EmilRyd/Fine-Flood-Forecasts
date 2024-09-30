@@ -1,0 +1,17 @@
+base_run_dir: /home/admin/Fine-Flood-Forecasts/experiment/models/runs/sota_20
+epochs: 2
+experiment_name: basin_14301000
+finetune_modules:
+- head
+learning_rate:
+  0: 2.7064104655699502e-05
+  5: 5.312792802651719e-06
+loss: NSE
+metrics:
+- NSE
+- KGE
+- MSE
+test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/531_basins.txt
+train_basin_file: assets/basin_files/14301000.txt
+validate_every: 5
+validation_basin_file: assets/basin_files/14301000.txt

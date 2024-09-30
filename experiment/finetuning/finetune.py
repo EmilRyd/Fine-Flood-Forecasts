@@ -9,7 +9,7 @@ from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
 import os
 import yaml
-from experiment.finetuning.utils import Sweep, cfg_from_args, generate_sweep_run_directory
+from experiment.finetuning.utils import Sweep, cfg_from_args, generate_sweep_run_directory, param_dict_from_model_output
 import logging
 from hyperopt import fmin, Trials, tpe, STATUS_OK
 from datetime import datetime
@@ -53,14 +53,10 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
     # Create a basin file with the basin we selected above
     with open(basin_file_path, 'w') as fp:
         fp.write(basin) 
-
-def finetune_model(args):
-    basin = args['basin']
-    data = cfg_from_args(args)
-    
+def finetune_model_from_cfg(data: dict, basin: str):
     # finetune using temporary yaml file
-    
-    with tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f:
+    #tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f
+    with open('finetune_new.yml', 'w') as f:
         yaml.dump(data, f)  
 
         finetune(Path(__file__).parent / 'assets' / f.name)
@@ -75,14 +71,23 @@ def finetune_model(args):
     # return negative validation score
     return {'loss': -float(v_df.iloc[0][f'basin_{basin}']), 'status': STATUS_OK, 'model': finetuned_model}
 
+def finetune_model(args):
+    basin = args['basin']
+    data = cfg_from_args(args)
+    score = finetune_model_from_cfg(data=data, basin=basin)
+    return score
+    
 
 
 def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_evals=10, evaluate=True) -> Sweep:
    
     trials = Trials()
     best_params = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
+    # add basin back to best params    
     # add basin back to best params
-    finetuned_model = trials.best_trial['result']['model']
+    finetuned_model_cfg = trials.best_trial['result']['model'].cfg._cfg
+    finetuning_data = finetune_model_from_cfg(data=finetuned_model_cfg, basin=search_space['basin'])
+    finetuned_model = finetuning_data['model']
 
     # store model, finetuned model, and best_params
     sweep = Sweep(best_params=best_params, base_model=model, 
@@ -104,6 +109,8 @@ def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500, max_eva
     for _ in range(n):
         # pick basin
         basin, _ = pick_a_basin(model=model)
+        while basin in basins:
+            basin, _ = pick_a_basin(model=model)
         basins.append(basin)
         search_space['basin'] = basin
 
