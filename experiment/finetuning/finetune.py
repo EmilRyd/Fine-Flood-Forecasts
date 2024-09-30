@@ -9,7 +9,7 @@ from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
 import os
 import yaml
-from experiment.finetuning.utils import Sweep, param_dict_from_model_output
+from experiment.finetuning.utils import Sweep, cfg_from_args
 import logging
 from hyperopt import fmin, Trials, tpe, STATUS_OK
 from datetime import datetime
@@ -51,32 +51,6 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
     with open(basin_file_path, 'w') as fp:
         fp.write(basin) 
 
-def cfg_from_args(args):
-
-    # sanity check on args
-    assert args['epochs'] > 0, f"Number of epochs is invalid: {args['epochs']}"
-    # get base cfg
-    yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
-
-   # Load the existing YAML data
-    with open(yml_file_path, 'r') as f:
-        data = yaml.safe_load(f)
-
-    # set dict parameters based on config dictionary passed to function
-    modules = ['head']
-    for key, value in args.items():
-        if not (key == 'basin') and not (key == 'model'):
-            if (key == 'lstm'):
-                if value:
-                    modules.append(key)
-            elif (key == 'epochs'):
-                data[key] = int(value) # make this cleaner mayber
-            else:
-                data[key] = value
-
-    data['finetune_modules'] = modules
-    return data
-
 def finetune_model(args):
     basin = args['basin']
     data = cfg_from_args(args)
@@ -117,3 +91,21 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
         evaluate_models(models=[sweep.finetuned_model], bolden_values=True, include_benchmark=False, ignore_previous_metrics=True)
     
     return sweep
+
+
+def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500) -> tuple[list[str], list[Path]]:
+    basins = []
+    sweeps = []
+    generate_run_id = generate_sweep_run_id()
+    for _ in range(n):
+        # pick basin
+        basin, _ = pick_a_basin(model=model)
+        basins.append(basin)
+        search_space['basin'] = basin
+
+        # finetune a model  
+        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=2, evaluate=True)
+        sweep_results = sweep.save()
+        sweeps.append(sweep_results)
+    
+    return basins, sweeps

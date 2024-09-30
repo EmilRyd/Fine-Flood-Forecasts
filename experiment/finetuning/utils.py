@@ -7,6 +7,8 @@ import pandas as pd
 from hyperopt import Trials
 from sympy import Union
 from tensorboard.backend.event_processing import event_accumulator
+import yaml
+from datetime import datetime
 
 from experiment.utils import TrainedModel
 
@@ -20,13 +22,42 @@ def param_dict_from_model_output(best_params: dict, basin: str):
     args['lstm'] = best_params['lstm']
     return args
 
-def make_unique(filename):
+def cfg_from_args(args):
+
+    # sanity check on args
+    # get base cfg
+    yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
+
+   # Load the existing YAML data
+    with open(yml_file_path, 'r') as f:
+        data = yaml.safe_load(f)
+
+    # set dict parameters based on config dictionary passed to function
+    modules = ['head'] 
+    if args['lstm'] == 1:
+        modules.append('lstm')
+    data['epochs'] = args['epoch_offset'] + args['additional_epochs']
+    data['learning_rate'] = args['learning_rate']
+    data['loss'] = args['loss']
+    data['finetune_modules'] = modules
+    
+    return data
+
+def make_unique(name):
     counter = 1
-    name, extension = os.path.splitext(filename)
-    while os.path.exists(filename):
-        filename = f"{name}_{counter}{extension}"
+    base_name, extension = os.path.splitext(name)
+    while os.path.exists(name):
+        filename = f"{base_name}_{counter}{extension}"
         counter += 1
     return filename
+
+def generate_sweep_run_directory(base_model_id: str):
+    results_dir = Path(__file__).parent / 'results'
+    dir_name = results_dir / base_model_id
+    u_name = make_unique(filename=dirname)
+    os.mkdir(u_name)
+
+
 
 def load_pkl(filename: Path):
     with open(filename, 'rb') as f:
