@@ -18,7 +18,7 @@ def main(model: TrainedModel = None, config_file_path: Path = None):
     """
 
     # train a model if one is not provided
-    if not model:
+    if model is None:
         assert config_file_path, 'no file path provided for the config file'
         assert os.path.exists(config_file_path), f'provided file path {config_file_path} does not exist'
 
