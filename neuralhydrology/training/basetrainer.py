@@ -163,6 +163,7 @@ class BaseTrainer(object):
         if self.cfg.is_finetuning:
             self._freeze_model_parts()
 
+        # pass the static attributes to the optimizer here
         self.optimizer = self._get_optimizer()
         self.loss_obj = self._get_loss_obj().to(self.device)
 

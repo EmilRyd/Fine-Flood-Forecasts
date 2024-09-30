@@ -28,12 +28,21 @@ def get_optimizer(model: torch.nn.Module, cfg: Config) -> torch.optim.Optimizer:
     torch.optim.Optimizer
         Optimizer object that can be used for model training.
     """
-    if cfg.optimizer.lower() == "adam":
-        optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate[0])
-    elif cfg.optimizer.lower() == "adamw":
-        optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.learning_rate[0])
+    if tune_attributes:
+        if cfg.optimizer.lower() == "adam":
+            optimizer = torch.optim.Adam(model.attributes(), lr=cfg.learning_rate[0])
+        elif cfg.optimizer.lower() == "adamw":
+            optimizer = torch.optim.AdamW(model.attributes(), lr=cfg.learning_rate[0])
+        else:
+            raise NotImplementedError(f"{cfg.optimizer} not implemented or not linked in `get_optimizer()`")
+
     else:
-        raise NotImplementedError(f"{cfg.optimizer} not implemented or not linked in `get_optimizer()`")
+        if cfg.optimizer.lower() == "adam":
+            optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate[0])
+        elif cfg.optimizer.lower() == "adamw":
+            optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.learning_rate[0])
+        else:
+            raise NotImplementedError(f"{cfg.optimizer} not implemented or not linked in `get_optimizer()`")
 
     return optimizer
 
