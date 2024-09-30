@@ -101,7 +101,7 @@ class Sweep:
         self.trials = trials
 
     def save(self, run_dir: Path) -> Path:
-        unique_filename = make_unique(run_dir / f'{self.base_model.config_id}_{self.basin}.pkl')
+        unique_filename = make_unique(run_dir / f'{self.basin}.pkl')
         with open(unique_filename, 'wb') as f:
             p.dump(self, f)
         return Path(unique_filename)

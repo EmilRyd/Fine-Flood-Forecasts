@@ -41,11 +41,14 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
 
     data['experiment_name'] = f'basin_{basin}'  # Example modification
 
+    basin_file_path = os.path.join('assets', 'basin_files', f'{basin}.txt')
+    data['train_basin_file'] = basin_file_path
+    data['validation_basin_file'] = basin_file_path
+
     # Write back to the YAML file
     with open(yml_file_path, 'w') as f:
         yaml.dump(data, f)  
 
-    basin_file_path = data['train_basin_file']
     
     # Create a basin file with the basin we selected above
     with open(basin_file_path, 'w') as fp:
@@ -93,7 +96,7 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
     return sweep
 
 
-def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500) -> tuple[list[str], list[Path]]:
+def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500, max_evals=50) -> tuple[list[str], list[Path], Path]:
     basins = []
     sweeps = []
     run_dir = generate_sweep_run_directory(base_model_id=model.config_id)
@@ -105,8 +108,8 @@ def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500) -> tupl
         search_space['basin'] = basin
 
         # finetune a model  
-        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=2, evaluate=True)
+        sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=max_evals, evaluate=True)
         sweep_results = sweep.save(run_dir=run_dir)
         sweeps.append(sweep_results)
     
-    return basins, sweeps
+    return basins, sweeps, run_dir

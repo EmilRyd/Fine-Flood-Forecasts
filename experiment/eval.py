@@ -62,7 +62,7 @@ def evalute_model_csvs(model_eval_files: dict, basins: list, include_benchmark: 
 
         if len(basins) > 0:
             df = df[df.basin.isin(basins)].reset_index(drop=True)
-            assert not df.empty, 'wrong basin!'
+            assert not df.empty, f'wrong basin!, expected {basins}, but got {df.basin}'
 
         assert set(basins) == set(df.basin) or (len(basins) == 0 and len(df.basin) == NUM_BASINS), f'All basins are not in dataframe, or vice versa. df_length = {len(df.basin)}, basins_length = {len(basins)}'
 
@@ -115,7 +115,7 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
             df = pd.read_csv(metrics_file, dtype={'basin':str})
 
             # if either the basins asked for are not a subset of the evaluated basins, or all basins are asked for and not all exist
-            if not (set(basins).issubset(set(df.basin.tolist())))  or not (len(df.basin) == NUM_BASINS and len(basins)==0):  
+            if not (set(basins).issubset(set(df.basin.tolist())))  or (not (len(df.basin) == NUM_BASINS) and len(basins)==0):  
                 eval_run(model.run_dir, period=period, epoch=model.epoch)
         else:
             eval_run(model.run_dir, period=period, epoch=model.epoch)

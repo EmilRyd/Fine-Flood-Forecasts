@@ -6,7 +6,7 @@ from IPython.core.display import display, HTML
 from experiment.eval import evaluate_models
 
 from experiment.finetuning.finetune import cfg_from_args
-from experiment.finetuning.utils import load_pkl, Sweep, get_training_losses, param_dict_from_model_output
+from experiment.finetuning.utils import generate_sweep_run_directory, load_pkl, Sweep, get_training_losses, param_dict_from_model_output
 import matplotlib.pyplot as plt
 
 import os
@@ -158,27 +158,26 @@ def plot_fine_parameters(sweeps: list):
     plt.title('epochs')
     plt.show()
 
-def get_sweeps(basins: list) -> list[Sweep]:
-    results_dir = Path(__file__).parent / 'sweeps'
+def get_sweeps(basins: list, run_dir: Path) -> list[Sweep]:
     sweeps = []
     
     if len(basins) == 0:
         
-        for filename in os.listdir(results_dir):
-            sweep_results = Path(os.path.join(results_dir, filename))
+        for filename in os.listdir(run_dir):
+            sweep_results = Path(os.path.join(run_dir, filename))
             if os.path.isfile(sweep_results):
                 sweep = load_pkl(sweep_results)
                 sweeps.append(sweep)
     else:
         for basin in basins:
-            sweep_results = results_dir / f'{base_model_id}_{basin}.pkl'
+            sweep_results = run_dir / f'{basin}.pkl'
             sweep = load_pkl(sweep_results)
             sweeps.append(sweep)
     return sweeps
 
 # reading resluts and performing experiments on them
-def run_all_experiments(basins: list = [], base_model_id = TrainedModelID.SOTA_20):
-    sweeps = get_sweeps(basins=basins)
+def run_all_experiments(run_dir: Path, basins: list = []):
+    sweeps = get_sweeps(basins=basins, run_dir=run_dir)
     performance_comparison(sweeps)
     loss_ratio_comparison(sweeps)
 
@@ -192,28 +191,5 @@ if __name__ == '__main__':
     # sanity check on the finetuned validation losses
     
     # get sweeps
-    sweeps = get_sweeps(basins=[])
-    deltas = []
-    for sweep in sweeps:
-        # load the sweep
-        fine_validation_score = -min(sweep.trials.losses())
-        
-        base_val = evaluate_models([sweep.base_model], basins=[sweep.basin], include_benchmark=False, period='validation', ignore_previous_metrics=False)
-        
-        # sanity check on the validation losses
-        fine_val_basin = evaluate_models([sweep.finetuned_model], basins=[sweep.basin], include_benchmark=False, period='validation', ignore_previous_metrics=False)
-        #assert float(fine_val_basin.iloc[0][f'basin_{sweep.basin}']) == fine_validation_score, f'finetuned model final validation score ({float(fine_val_basin.iloc[0][f"basin_{sweep.basin}"])}) and negative best loss ({fine_validation_score}) do not equal each other'
-        delta = float(fine_val_basin.iloc[0][f'basin_{sweep.basin}']) - fine_validation_score
-        deltas.append(delta)
-        best_args = param_dict_from_model_output(sweep.best_params, basin=sweep.basin)
-        best_data = cfg_from_args(best_args)
-        for key, val in best_data.items():
-            if not val == sweep.finetuned_model.cfg._cfg[key]:
-                print(f'{key}')
-
-        
-
-    plt.hist(deltas)
-    plt.title(np.mean(deltas))
-    plt.show()
-        
+    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20_3'
+    run_all_experiments(run_dir=run_dir)
