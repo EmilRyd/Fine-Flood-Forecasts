@@ -34,9 +34,9 @@ def cfg_from_args(args):
 
     # set dict parameters based on config dictionary passed to function
     modules = ['head'] 
-    if args['lstm'] == 1:
+    if args['lstm']:
         modules.append('lstm')
-    data['epochs'] = args['epoch_offset'] + args['additional_epochs']
+    data['epochs'] = int(args['epoch_offset'] + args['additional_epochs'])
     data['learning_rate'] = args['learning_rate']
     data['loss'] = args['loss']
     data['finetune_modules'] = modules
@@ -47,15 +47,16 @@ def make_unique(name):
     counter = 1
     base_name, extension = os.path.splitext(name)
     while os.path.exists(name):
-        filename = f"{base_name}_{counter}{extension}"
+        name = Path(f"{base_name}_{counter}{extension}")
         counter += 1
-    return filename
+    return name
 
 def generate_sweep_run_directory(base_model_id: str):
-    results_dir = Path(__file__).parent / 'results'
-    dir_name = results_dir / base_model_id
-    u_name = make_unique(filename=dirname)
+    results_dir = Path(__file__).parent / 'sweeps'
+    dirname = results_dir / base_model_id
+    u_name = make_unique(name=dirname)
     os.mkdir(u_name)
+    return u_name
 
 
 
@@ -99,9 +100,8 @@ class Sweep:
         self.max_evals = max_evals
         self.trials = trials
 
-    def save(self) -> Path:
-        results_dir = Path(__file__).parent / 'results'
-        unique_filename = make_unique(results_dir / f'{self.base_model.config_id}_{self.basin}.pkl')
+    def save(self, run_dir: Path) -> Path:
+        unique_filename = make_unique(run_dir / f'{self.base_model.config_id}_{self.basin}.pkl')
         with open(unique_filename, 'wb') as f:
             p.dump(self, f)
         return Path(unique_filename)

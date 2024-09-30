@@ -9,7 +9,7 @@ from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
 import os
 import yaml
-from experiment.finetuning.utils import Sweep, cfg_from_args
+from experiment.finetuning.utils import Sweep, cfg_from_args, generate_sweep_run_directory
 import logging
 from hyperopt import fmin, Trials, tpe, STATUS_OK
 from datetime import datetime
@@ -56,7 +56,7 @@ def finetune_model(args):
     data = cfg_from_args(args)
     
     # finetune using temporary yaml file
-    #
+    
     with tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f:
         yaml.dump(data, f)  
 
@@ -96,7 +96,8 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
 def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500) -> tuple[list[str], list[Path]]:
     basins = []
     sweeps = []
-    generate_run_id = generate_sweep_run_id()
+    run_dir = generate_sweep_run_directory(base_model_id=model.config_id)
+    
     for _ in range(n):
         # pick basin
         basin, _ = pick_a_basin(model=model)
@@ -105,7 +106,7 @@ def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500) -> tupl
 
         # finetune a model  
         sweep = find_best_finetuning_params(search_space=search_space, model=model, max_evals=2, evaluate=True)
-        sweep_results = sweep.save()
+        sweep_results = sweep.save(run_dir=run_dir)
         sweeps.append(sweep_results)
     
     return basins, sweeps
