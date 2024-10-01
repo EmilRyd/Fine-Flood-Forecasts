@@ -30,13 +30,14 @@ def get_optimizer(model: torch.nn.Module, cfg: Config, attributes = None, tune_a
     """
     if tune_attributes:
         assert not attributes is None, f'tune_attributes set to {tune_attributes}, but no attributes passed'
-        s_attributes = torch.tensor()
+        s_attributes = torch.empty(0)
         for key, val in attributes.items():
             s_attributes = torch.cat((s_attributes, val))
+        optimizable_attributes = s_attributes.clone().detach().requires_grad_()
         if cfg.optimizer.lower() == "adam":
-            optimizer = torch.optim.Adam([s_attributes], lr=cfg.learning_rate[0])
+            optimizer = torch.optim.Adam([optimizable_attributes], lr=cfg.learning_rate[0])
         elif cfg.optimizer.lower() == "adamw":
-            optimizer = torch.optim.AdamW([s_attributes], lr=cfg.learning_rate[0])
+            optimizer = torch.optim.AdamW([optimizable_attributes], lr=cfg.learning_rate[0])
         else:
             raise NotImplementedError(f"{cfg.optimizer} not implemented or not linked in `get_optimizer()`")
 
