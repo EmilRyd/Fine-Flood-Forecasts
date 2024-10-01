@@ -4,9 +4,9 @@
 experiment_name: sota
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
-train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
-validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
-test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
+train_basin_file: /Users/emilryd/Personal/research/CMU-Africa/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
+validation_basin_file: /Users/emilryd/Personal/research/CMU-Africa/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
+test_basin_file: /Users/emilryd/Personal/research/CMU-Africa/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
 
 # training, validation and test time periods (format = 'dd/mm/yyyy')
 train_start_date: "01/10/1999"
@@ -138,7 +138,7 @@ save_weights_every: 1
 dataset: camels_us
 
 # Path to data set root
-data_dir: /home/admin/Fine-Flood-Forecasts/data/CAMELS_US
+data_dir: /Users/emilryd/Personal/research/CMU-Africa/Fine-Flood-Forecasts/data/CAMELS_US
 
 # Forcing product [daymet, maurer, maurer_extended, nldas, nldas_extended, nldas_hourly]
 # can be either a list of forcings or a single forcing product

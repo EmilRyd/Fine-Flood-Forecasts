@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict
 import shutil
 
+import attr
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -82,8 +83,8 @@ class BaseTrainer(object):
     def _get_model(self) -> torch.nn.Module:
         return get_model(cfg=self.cfg)
 
-    def _get_optimizer(self) -> torch.optim.Optimizer:
-        return get_optimizer(model=self.model, cfg=self.cfg)
+    def _get_optimizer(self, tune_attributes: bool, attributes: dict) -> torch.optim.Optimizer:
+        return get_optimizer(model=self.model, cfg=self.cfg, tune_attributes=tune_attributes, attributes=attributes)
 
     def _get_loss_obj(self) -> loss.BaseLoss:
         return get_loss_obj(cfg=self.cfg)
@@ -163,7 +164,8 @@ class BaseTrainer(object):
         if self.cfg.is_finetuning:
             self._freeze_model_parts()
 
-        self.optimizer = self._get_optimizer()
+        # pass the static attributes to the optimizer here
+        self.optimizer = self._get_optimizer(tune_attributes=True, attributes=ds._attributes)
         self.loss_obj = self._get_loss_obj().to(self.device)
 
         # Add possible regularization terms to the loss function.

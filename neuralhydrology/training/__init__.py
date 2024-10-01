@@ -11,7 +11,7 @@ from neuralhydrology.utils.config import Config
 LOGGER = logging.getLogger(__name__)
 
 
-def get_optimizer(model: torch.nn.Module, cfg: Config) -> torch.optim.Optimizer:
+def get_optimizer(model: torch.nn.Module, cfg: Config, attributes = None, tune_attributes: bool =  False) -> torch.optim.Optimizer:
     """Get specific optimizer object, depending on the run configuration.
     
     Currently only 'Adam' and 'AdamW' are supported.
@@ -28,12 +28,26 @@ def get_optimizer(model: torch.nn.Module, cfg: Config) -> torch.optim.Optimizer:
     torch.optim.Optimizer
         Optimizer object that can be used for model training.
     """
-    if cfg.optimizer.lower() == "adam":
-        optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate[0])
-    elif cfg.optimizer.lower() == "adamw":
-        optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.learning_rate[0])
+    if tune_attributes:
+        assert not attributes is None, f'tune_attributes set to {tune_attributes}, but no attributes passed'
+        s_attributes = torch.empty(0)
+        for key, val in attributes.items():
+            s_attributes = torch.cat((s_attributes, val))
+        optimizable_attributes = s_attributes.clone().detach().requires_grad_()
+        if cfg.optimizer.lower() == "adam":
+            optimizer = torch.optim.Adam([optimizable_attributes], lr=cfg.learning_rate[0])
+        elif cfg.optimizer.lower() == "adamw":
+            optimizer = torch.optim.AdamW([optimizable_attributes], lr=cfg.learning_rate[0])
+        else:
+            raise NotImplementedError(f"{cfg.optimizer} not implemented or not linked in `get_optimizer()`")
+
     else:
-        raise NotImplementedError(f"{cfg.optimizer} not implemented or not linked in `get_optimizer()`")
+        if cfg.optimizer.lower() == "adam":
+            optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate[0])
+        elif cfg.optimizer.lower() == "adamw":
+            optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.learning_rate[0])
+        else:
+            raise NotImplementedError(f"{cfg.optimizer} not implemented or not linked in `get_optimizer()`")
 
     return optimizer
 
