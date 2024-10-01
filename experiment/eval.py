@@ -124,7 +124,4 @@ def evaluate_models(models: list, basins: list = [], include_benchmark: bool = T
     # evalauate the model csvs
     df = evalute_model_csvs(models_dict, basins=basins, include_benchmark=include_benchmark, bolden_values=bolden_values)
 
-    # write the evaluated df to disk
-    df.to_csv(os.path.join(eval_dir, 'eval.csv'))
-
     return df

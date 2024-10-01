@@ -81,8 +81,8 @@ def performance_comparison(sweeps: list):
             
             delta_dict[key] = value + [deltas[key]]
     for key, value in delta_dict.items():
-        plt.xlim(left=-0.06, right=0.06)
-        plt.hist(value, bins=100)
+        #plt.xlim(left=-0.06, right=0.06)
+        plt.hist(value)
         ave = np.mean(value)
         median = np.median(value)
         std = np.std(value)
@@ -191,5 +191,5 @@ if __name__ == '__main__':
     # sanity check on the finetuned validation losses
     
     # get sweeps
-    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20_3'
+    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20_1'
     run_all_experiments(run_dir=run_dir)

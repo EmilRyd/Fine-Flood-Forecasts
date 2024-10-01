@@ -271,7 +271,7 @@ class BaseTrainer(object):
 
         optimizer_path = self.cfg.run_dir / f"optimizer_state_epoch{epoch:03d}.pt"
         torch.save(self.optimizer.state_dict(), str(optimizer_path))
-
+            
     def _train_epoch(self, epoch: int):
         self.model.train()
         self.experiment_logger.train()
@@ -293,6 +293,8 @@ class BaseTrainer(object):
 
             # apply possible pre-processing to the batch before the forward pass
             data = self.model.pre_model_hook(data, is_train=True)
+
+            
 
             # get predictions
             predictions = self.model(data)
