@@ -55,11 +55,12 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
         fp.write(basin) 
 def finetune_model_from_cfg(data: dict, basin: str):
     # finetune using temporary yaml file
-    #tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f
-    with open('finetune_new.yml', 'w') as f:
+    assets_dir = Path(__file__).parent / 'assets'
+    #
+    with tempfile.NamedTemporaryFile(delete=True, dir=assets_dir, suffix='.yml', mode='w') as f:
         yaml.dump(data, f)  
 
-        finetune(Path(__file__).parent / 'assets' / f.name)
+        finetune(assets_dir / f.name)
 
         run_dir = Path(os.path.abspath('')) / 'runs' / f'basin_{basin}'
         config_file_path = run_dir / 'config.yml'
@@ -85,8 +86,10 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
     best_params = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
     # add basin back to best params    
     # add basin back to best params
-    finetuned_model_cfg = trials.best_trial['result']['model'].cfg._cfg
-    finetuning_data = finetune_model_from_cfg(data=finetuned_model_cfg, basin=search_space['basin'])
+
+    # run best model to get that fresh validation data
+    best_args = param_dict_from_model_output(best_params, search_space['basin'])
+    finetuning_data = finetune_model(best_args)
     finetuned_model = finetuning_data['model']
 
     # store model, finetuned model, and best_params

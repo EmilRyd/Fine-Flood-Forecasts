@@ -10,6 +10,7 @@ import os
 import pandas as pd
 import numpy as np
 import re
+from strenum import StrEnum
 
 """Constants"""
 NUM_BASINS = 531

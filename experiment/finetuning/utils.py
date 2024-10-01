@@ -12,13 +12,16 @@ from datetime import datetime
 
 from experiment.utils import TrainedModel
 
+# constants
+LOSSES = ['NSE', 'MSE', 'RMSE']
+
 # functions
 def param_dict_from_model_output(best_params: dict, basin: str):
     args = {}
     args['basin'] = basin
     args['epochs'] = int(best_params['epochs'])
     args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
-    args['loss'] = best_params['loss']
+    args['loss'] = LOSSES[best_params['loss']]
     args['lstm'] = best_params['lstm']
     return args
 
@@ -36,7 +39,7 @@ def cfg_from_args(args):
     modules = ['head'] 
     if args['lstm']:
         modules.append('lstm')
-    data['epochs'] = int(args['epoch_offset'] + args['additional_epochs'])
+    data['epochs'] = int(args['epochs'])
     data['learning_rate'] = args['learning_rate']
     data['loss'] = args['loss']
     data['finetune_modules'] = modules
