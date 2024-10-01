@@ -83,7 +83,7 @@ class BaseTrainer(object):
         return get_model(cfg=self.cfg)
 
     def _get_optimizer(self) -> torch.optim.Optimizer:
-        return get_optimizer(model=self.model, cfg=self.cfg)
+        return get_optimizer(model=self.model, cfg=self.cfg, tune_attributes=True, attributes=self.ds._attributes)
 
     def _get_loss_obj(self) -> loss.BaseLoss:
         return get_loss_obj(cfg=self.cfg)
