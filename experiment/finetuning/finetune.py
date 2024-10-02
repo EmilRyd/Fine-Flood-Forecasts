@@ -55,8 +55,8 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
         fp.write(basin) 
 def finetune_model_from_cfg(data: dict, basin: str):
     # finetune using temporary yaml file
-    #tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f
-    with open('finetune_new.yml', 'w') as f:
+    
+    with tempfile.NamedTemporaryFile(delete=True, dir=Path(__file__).parent / 'assets', suffix='.yml', mode='w') as f:
         yaml.dump(data, f)  
 
         finetune(Path(__file__).parent / 'assets' / f.name)
