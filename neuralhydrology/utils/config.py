@@ -815,6 +815,10 @@ class Config(object):
         return self._cfg.get("transfer_mtslstm_states", {'h': 'linear', 'c': 'linear'})
 
     @property
+    def tune_attributes(self) -> bool:
+        return self._cfg.get('tune_attributes', False)
+
+    @property
     def umal_extend_batch(self) -> bool:
         return self._cfg.get("umal_extend_batch", False)
 

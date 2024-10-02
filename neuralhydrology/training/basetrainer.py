@@ -83,8 +83,8 @@ class BaseTrainer(object):
     def _get_model(self) -> torch.nn.Module:
         return get_model(cfg=self.cfg)
 
-    def _get_optimizer(self, tune_attributes: bool, attributes: dict) -> torch.optim.Optimizer:
-        return get_optimizer(model=self.model, cfg=self.cfg, tune_attributes=tune_attributes, attributes=attributes)
+    def _get_optimizer(self, attributes: dict) -> torch.optim.Optimizer:
+        return get_optimizer(model=self.model, cfg=self.cfg, attributes=attributes)
 
     def _get_loss_obj(self) -> loss.BaseLoss:
         return get_loss_obj(cfg=self.cfg)
@@ -165,7 +165,7 @@ class BaseTrainer(object):
             self._freeze_model_parts()
 
         # pass the static attributes to the optimizer here
-        self.optimizer = self._get_optimizer(tune_attributes=True, attributes=ds._attributes)
+        self.optimizer = self._get_optimizer(attributes=ds._attributes)
         self.loss_obj = self._get_loss_obj().to(self.device)
 
         # Add possible regularization terms to the loss function.
@@ -329,7 +329,7 @@ class BaseTrainer(object):
                 self.optimizer.step()
 
             pbar.set_postfix_str(f"Loss: {loss.item():.4f}")
-
+            
             self.experiment_logger.log_step(**{k: v.item() for k, v in all_losses.items()})
 
     def _set_random_seeds(self):

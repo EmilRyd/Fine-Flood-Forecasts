@@ -710,9 +710,7 @@ class BaseDataset(Dataset):
             # preprocess each basin feature vector as pytorch tensor
             for basin in self.basins:
                 attributes = df.loc[df.index == basin].values.flatten()
-                # CHANGE: setting requires grad = True for the static attributes
-                self._attributes[basin] = torch.from_numpy(attributes.astype(np.float32)).requires_grad_()
-
+                self._attributes[basin] = torch.from_numpy(attributes.astype(np.float32))
     def _load_data(self):
         # load attributes first to sanity-check those features before doing the compute expensive time series loading
         self._load_combined_attributes()

@@ -83,6 +83,11 @@ class InputLayer(nn.Module):
         self.output_size = self.dynamics_output_size + self.statics_output_size + self._num_autoregression_inputs
         if cfg.head.lower() == "umal":
             self.output_size += 1
+        
+        # add a statics embedding correction tensor if tuning attributes
+        self.statics_corrector = nn.Parameter(torch.zeros(statics_input_size))
+        if not cfg.tune_attributes:
+            self.statics_corrector.requires_grad = False
 
     @staticmethod
     def _get_embedding_net(embedding_spec: Optional[dict], input_size: int, purpose: str) -> Tuple[nn.Module, int]:
@@ -168,6 +173,7 @@ class InputLayer(nn.Module):
 
         statics_out = None
         if x_s is not None:
+            x_s = x_s + self.statics_corrector
             statics_out = self.statics_embedding(x_s)
 
         if not concatenate_output:
