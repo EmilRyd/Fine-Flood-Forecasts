@@ -4,9 +4,9 @@
 experiment_name: attribute_tuning
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
-train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/basin_files/01022500.txt
-validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/basin_files/01022500.txt
-test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/basin_files/01022500.txt
+train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/531_basins.txt
+validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/531_basins.txt
+test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/531_basins.txt
 
 # training, validation and test time periods (format = 'dd/mm/yyyy')
 train_start_date: "01/10/1999"
@@ -22,7 +22,7 @@ device: cuda:0
 # --- Validation configuration ---------------------------------------------------------------------
 
 # specify after how many epochs to perform validation
-validate_every: 1
+validate_every: 30
 
 # specify how many random basins to use for validation
 validate_n_random_basins: 1
@@ -88,7 +88,7 @@ learning_rate:
 batch_size: 256
 
 # Number of training epochs
-epochs: 1
+epochs: 30
 
 # adds noise with given std to the labels during training. Leave empty or set to 0 if not used.
 target_noise_std:
