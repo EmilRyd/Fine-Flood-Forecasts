@@ -39,7 +39,7 @@ def cfg_from_args(args):
     modules = ['head'] 
     if args['lstm']:
         modules.append('lstm')
-    data['epochs'] = int(args['epoch_offset'] + args['additional_epochs'])
+    data['epochs'] = int(args['epochs'])
     data['learning_rate'] = args['learning_rate']
     data['loss'] = args['loss']
     data['finetune_modules'] = modules
