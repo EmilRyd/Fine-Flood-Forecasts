@@ -4,14 +4,13 @@ from pathlib import Path
 
 import torch
 
-from experiment import train
-from neuralhydrology.utils.config import Config
 from neuralhydrology.datasetzoo import get_dataset
 from neuralhydrology.datautils.utils import load_scaler
 
-from experiment.finetuning.finetune import finetune_model, pick_a_basin, update_files
+from experiment.utils import TrainedModelID, get_epoch_string, TrainedModel, load_camels_basins
 
-from experiment.utils import TrainedModelID, get_epoch_string, TrainedModel
+from experiment.finetuning.finetune import finetune_model, update_files
+
 
 def finetune_attributes_for_basin(basin: str, base_model: TrainedModel) -> TrainedModel:
     # create yaml from base_model and basin
@@ -42,21 +41,44 @@ def fetch_tuned_attributes(trained_model: TrainedModel) -> tuple[torch.Tensor, t
 
     return final_attributes, original_attributes
 
+def finetune_attributes(basins: list, base_model: TrainedModel)-> list[TrainedModel]:
+    tuned_models = []
+    
+    for basin in basins:
+        tuned_model = finetune_attributes_for_basin(basin)
+        tuned_models.append(tuned_model)
+        
+    
+    return tuned_models
+
+def examine_attributes(tuned_models: list[TrainedModel]):
+    attribute_deltas = []
+    for tuned_model in tuned_models:
+        new_attributes, old_attributes = fetch_tuned_attributes(trained_model=tuned_model)
+        delta = new_attributes - old_attributes
+        attribute_deltas.append(delta)
+    
 
 
-    # 
+    # examine the attribute deltas in some way
+    print(attribute_deltas)
+
+
+
+
 if __name__ == '__main__':
     # pick a base model
     base_model = TrainedModel((TrainedModelID.ATTRIBUTE_TUNING))
 
     # pick a basin
-    basin = pick_a_basin(base_model)
+    basins = load_camels_basins()
 
-    # train model to finetune attributes
-    trained_model = finetune_attributes_for_basin(basin=basin, base_model=base_model)
+    # train models to finetune attributes
+    tuned_models, paths_to_models, run_dir = finetune_attributes()(basins=basins, base_model=base_model)
 
     # get the new and old attributes to compare
-    new_attributes, old_attributes = fetch_tuned_attributes(trained_model=trained_model)
+    examine_attributes(tuned_models)
+    
 
 
 

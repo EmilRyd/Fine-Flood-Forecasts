@@ -6,7 +6,7 @@ from IPython.core.display import display, HTML
 from experiment.eval import evaluate_models
 
 from experiment.finetuning.finetune import cfg_from_args
-from experiment.finetuning.utils import generate_sweep_run_directory, load_pkl, Sweep, get_training_losses, param_dict_from_model_output
+from experiment.utils import generate_run_directory, load_pkl, Sweep, param_dict_from_model_output
 import matplotlib.pyplot as plt
 
 import os
@@ -92,7 +92,7 @@ def performance_comparison(sweeps: list):
 def get_loss_ratios(model: TrainedModel) -> pd.Series:
 
      # maybe this should go into a more general utils file?
-    train_df, val_df = get_training_losses(model)
+    train_df, val_df = model.get_training_losses()
 
     val_df.rename(columns={'value': 'val'}, inplace=True)
     train_df.rename(columns={'value': 'train'}, inplace=True)
@@ -191,5 +191,5 @@ if __name__ == '__main__':
     # sanity check on the finetuned validation losses
     
     # get sweeps
-    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20_1'
+    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20'
     run_all_experiments(run_dir=run_dir)

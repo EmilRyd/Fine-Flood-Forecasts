@@ -4,7 +4,7 @@ from hyperopt import hp
 from experiment.utils import TrainedModel, TrainedModelID
 from experiment.finetuning.finetune import finetune_on_n_basins
 from experiment.finetuning.experiments import run_all_experiments
-from experiment.finetuning.utils import LOSSES
+from experiment.utils import LOSSES
 
 if __name__ == '__main__':
 

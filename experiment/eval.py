@@ -5,9 +5,8 @@ import pandas as pd
 import os
 from neuralhydrology.nh_run import eval_run
 import numpy as np
-from experiment.utils import TrainedModel, TrainedModelID, NUM_BASINS
+from experiment.utils import TrainedModel, NUM_BASINS
 # Display the DataFrame with HTML rendering
-from IPython.core.display import display, HTML
 import re
 
 metric_goals = {

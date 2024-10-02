@@ -3,14 +3,12 @@
 # Imports
 from pathlib import Path
 import tempfile
-from experiment.utils import TrainedModel
 import pandas as pd
 from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
 import os
 import yaml
-from experiment.finetuning.utils import Sweep, cfg_from_args, generate_sweep_run_directory, param_dict_from_model_output
-import logging
+from experiment.utils import Sweep, cfg_from_args, generate_run_directory, param_dict_from_model_output, TrainedModel
 from hyperopt import fmin, Trials, tpe, STATUS_OK
 from datetime import datetime
 from neuralhydrology.utils.config import Config
@@ -48,10 +46,11 @@ def update_files(model: TrainedModel, basin: str, yml_file_path=os.path.join('as
     with open(yml_file_path, 'w') as f:
         yaml.dump(data, f)  
 
-    
     # Create a basin file with the basin we selected above
     with open(basin_file_path, 'w') as fp:
         fp.write(basin) 
+
+
 def finetune_model_from_cfg(data: dict, basin: str):
     # finetune using temporary yaml file
     assets_dir = Path(__file__).parent / 'assets'
@@ -108,7 +107,7 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
 def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500, max_evals=50) -> tuple[list[str], list[Path], Path]:
     basins = []
     sweeps = []
-    run_dir = generate_sweep_run_directory(base_model_id=model.config_id)
+    run_dir = generate_run_directory(base_model_id=model.config_id, type_of_run=sweep)
     
     for _ in range(n):
         # pick basin
