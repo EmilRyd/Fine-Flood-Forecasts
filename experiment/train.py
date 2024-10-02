@@ -31,6 +31,6 @@ def train_models(config_paths: list) -> list:
     return models
 
 if __name__ == '__main__':
-    config_file_path = Path(__file__).parent / 'models' / 'sota_config.yml'
+    config_file_path = Path(__file__).parent / 'models' / 'attribute_tuning.yml'
 
     model = train_model(config_file_path)

@@ -1,12 +1,12 @@
 # --- Experiment configurations --------------------------------------------------------------------
 
 # experiment name, used as folder name
-experiment_name: sota
+experiment_name: attribute_tuning
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
-train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
-validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
-test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/assets/531_basins.txt
+train_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/basin_files/01022500.txt
+validation_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/basin_files/01022500.txt
+test_basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/basin_files/01022500.txt
 
 # training, validation and test time periods (format = 'dd/mm/yyyy')
 train_start_date: "01/10/1999"
@@ -25,7 +25,7 @@ device: cuda:0
 validate_every: 1
 
 # specify how many random basins to use for validation
-validate_n_random_basins: 531
+validate_n_random_basins: 1
 
 # specify which metrics to calculate during validation (see neuralhydrology.evaluation.metrics)
 # this can either be a list or a dictionary. If a dictionary is used, the inner keys must match the name of the
@@ -46,7 +46,7 @@ model: cudalstm
 checkpoint_path:
 
 # prediction head [regression]. Define the head specific parameters below
-head: UMAL
+head: regression
 
 # ----> Regression settings <----
 
@@ -88,7 +88,7 @@ learning_rate:
 batch_size: 256
 
 # Number of training epochs
-epochs: 30
+epochs: 1
 
 # adds noise with given std to the labels during training. Leave empty or set to 0 if not used.
 target_noise_std:

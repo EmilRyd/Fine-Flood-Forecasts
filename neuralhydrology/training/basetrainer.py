@@ -114,8 +114,13 @@ class BaseTrainer(object):
             for module_part in self.cfg.finetune_modules:
                 if module_part in self.model.module_parts:
                     module = getattr(self.model, module_part)
-                    for param in module.parameters():
-                        param.requires_grad = True
+                    for name, param in module.named_parameters():
+                        # if you have set tune_attributes to True in the config, the model will only finetune that and do nothing else
+                        if self.cfg.tune_attributes:
+                            if name == 'statics_corrector':
+                                param.requires_grad = True
+                        else:
+                            param.requires_grad = True
                 else:
                     unresolved_modules.append(module_part)
         else:

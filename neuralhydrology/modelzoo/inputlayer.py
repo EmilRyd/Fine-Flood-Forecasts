@@ -197,5 +197,7 @@ class InputLayer(nn.Module):
             return self.statics_embedding
         elif item == "dynamics_embedding":
             return self.dynamics_embedding
+        elif item == 'statics_corrector':
+            return self.statics_corrector
         else:
             raise KeyError(f"Cannot access {item} on InputLayer")
