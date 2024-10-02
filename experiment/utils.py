@@ -8,14 +8,11 @@ from datetime import timedelta
 from typing import Union
 import os
 from strenum import StrEnum
-import pandas as pd
 import numpy as np
-import re
-from strenum import StrEnum
 import pickle as p
 import pandas as pd
 from hyperopt import Trials
-from sympy import Union
+from typing import Union
 from tensorboard.backend.event_processing import event_accumulator
 import yaml
 
@@ -31,7 +28,7 @@ def load_camels_basins() -> list:
 
 def read_txt_to_list(txt_file: Path) -> list:
     with open(txt_file, 'r') as f:
-        return [f.strip() for line in f]
+        return [line.strip() for line in f]
 
 def load_cuda_model(config_file: Path, run_dir: Path, epoch: int =30) -> tuple[CudaLSTM, Config]:
 
@@ -115,30 +112,6 @@ def load_all_caravan_basins():
     write_list_to_txt(all_gauge_ids, basin_file)
     return
 
-def get_losses(log_file_path: str):
-    
-
-    train_losses = {}
-    val_losses = {}
-
-    # Read the log file
-    with open(log_file_path, 'r') as f:
-        for line in f:
-            # Extract training loss using regex
-            train_match = re.search(r'avg_total_loss:\s*([\d.]+)', line)
-            # Extract validation loss using regex
-            val_match = re.search(r'average validation loss:\s*([\d.]+)', line)
-            # Extract epochs
-            epoch_match = re.search(r'Epoch\s*(\d+)', line)
-            
-            if train_match:
-                assert epoch_match, "no epoch found"
-                train_losses[str(epoch_match.group(1))] = (float(train_match.group(1)))
-            if val_match:
-                assert epoch_match, "no epoch found"
-                val_losses[str(epoch_match.group(1))] = (float(val_match.group(1)))
-    return train_losses, val_losses
-
 def param_dict_from_model_output(best_params: dict, basin: str):
     args = {}
     args['basin'] = basin
@@ -201,7 +174,7 @@ class TrainedModel:
         elif isinstance(config_file_path_or_experiment_name, str):
             self.cfg_path = self.get_cfg_path(experiment_name=config_file_path_or_experiment_name)
         else:
-            raise ValueError(f'Cannot create a config from input of type {type(config_file_path_or_experiment_name)}.')
+            raise ValueError(f'Cannot create a TrainedModel from input of type {type(config_file_path_or_experiment_name)}.')
         
         self.cfg = Config(self.cfg_path)
         self.config_id = self.cfg.experiment_name
