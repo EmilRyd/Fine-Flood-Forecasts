@@ -10,6 +10,8 @@ import os
 from strenum import StrEnum
 import numpy as np
 import pickle as p
+import sys
+import dill as d
 import pandas as pd
 from hyperopt import Trials
 from typing import Union
@@ -112,36 +114,6 @@ def load_all_caravan_basins():
     write_list_to_txt(all_gauge_ids, basin_file)
     return
 
-def param_dict_from_model_output(best_params: dict, basin: str):
-    args = {}
-    args['basin'] = basin
-    args['epochs'] = int(best_params['epochs'])
-    args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
-    args['loss'] = LOSSES[best_params['loss']]
-    args['lstm'] = best_params['lstm']
-    return args
-
-def cfg_from_args(args):
-
-    # sanity check on args
-    # get base cfg
-    yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
-
-   # Load the existing YAML data
-    with open(yml_file_path, 'r') as f:
-        data = yaml.safe_load(f)
-
-    # set dict parameters based on config dictionary passed to function
-    modules = ['head'] 
-    if args['lstm']:
-        modules.append('lstm')
-    data['epochs'] = int(args['epochs'])
-    data['learning_rate'] = args['learning_rate']
-    data['loss'] = args['loss']
-    data['finetune_modules'] = modules
-    
-    return data
-
 def make_unique(name):
     counter = 1
     base_name, extension = os.path.splitext(name)
@@ -151,16 +123,18 @@ def make_unique(name):
     return name
 
 def generate_run_directory(base_model_id: str, type_of_run: str):
-    results_dir = Path(__file__).parent / type_of_run
+    results_dir = Path(os.getcwd()) / type_of_run
     dirname = results_dir / base_model_id
     u_name = make_unique(name=dirname)
     os.mkdir(u_name)
     return u_name
 
 
+
 def load_pkl(filename: Path):
     with open(filename, 'rb') as f:
-        data = p.load(f)
+        data = CustomUnpickler(f).load()
+    #del sys['experiment.finetuning.utils']
     return data    
 
 """Classes"""
@@ -248,3 +222,9 @@ class Sweep:
         with open(unique_filename, 'wb') as f:
             p.dump(self, f)
         return Path(unique_filename)
+
+class CustomUnpickler(p.Unpickler):
+    def find_class(self, module, name):
+        if module == 'experiment.finetuning.utils':
+            module = 'experiment.utils'
+        return super().find_class(module, name)

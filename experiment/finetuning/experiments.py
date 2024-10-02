@@ -5,8 +5,8 @@ from IPython.core.display import display, HTML
 
 from experiment.eval import evaluate_models
 
-from experiment.finetuning.finetune import cfg_from_args
-from experiment.utils import generate_run_directory, load_pkl, Sweep, param_dict_from_model_output
+from experiment.finetuning.finetune import cfg_from_args, param_dict_from_model_output
+from experiment.utils import load_pkl, Sweep
 import matplotlib.pyplot as plt
 
 import os
@@ -69,6 +69,9 @@ def performance_comparison_for_basin(sweep: Sweep):
     fine_test_score = float(fine_test_basin.iloc[0][f'basin_{sweep.basin}'])
     base_test_score = float(base_test_basin.iloc[0][f'{sweep.base_model.config_id}'])
     test_delta_basin = fine_test_score - base_test_score
+    print(sweep.basin)
+    print(f'new validation {fine_validation_score}')
+    print(f"old validation {float(base_val.iloc[0][f'{sweep.base_model.config_id}'])}")
 
     return {'val_basin': val_delta_basin, 'test_basin': test_delta_basin, 'test_all': test_delta_all}
 

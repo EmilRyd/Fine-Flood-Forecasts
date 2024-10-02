@@ -8,11 +8,41 @@ from neuralhydrology.nh_run import finetune
 from experiment.eval import evaluate_models
 import os
 import yaml
-from experiment.utils import Sweep, cfg_from_args, generate_run_directory, param_dict_from_model_output, TrainedModel
+from experiment.utils import Sweep, generate_run_directory, TrainedModel, LOSSES
 from hyperopt import fmin, Trials, tpe, STATUS_OK
 from datetime import datetime
 from neuralhydrology.utils.config import Config
 
+
+def param_dict_from_model_output(best_params: dict, basin: str):
+    args = {}
+    args['basin'] = basin
+    args['epochs'] = int(best_params['epochs'])
+    args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
+    args['loss'] = LOSSES[best_params['loss']]
+    args['lstm'] = best_params['lstm']
+    return args
+
+def cfg_from_args(args):
+
+    # sanity check on args
+    # get base cfg
+    yml_file_path = Path(__file__).parent / 'assets' / 'finetune.yml'
+
+   # Load the existing YAML data
+    with open(yml_file_path, 'r') as f:
+        data = yaml.safe_load(f)
+
+    # set dict parameters based on config dictionary passed to function
+    modules = ['head'] 
+    if args['lstm']:
+        modules.append('lstm')
+    data['epochs'] = int(args['epochs'])
+    data['learning_rate'] = args['learning_rate']
+    data['loss'] = args['loss']
+    data['finetune_modules'] = modules
+    
+    return data
 
 # pick a basin
 def pick_a_basin(model: TrainedModel, lower: float = None, higher: float = None) -> str:
@@ -107,7 +137,7 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
 def finetune_on_n_basins(model: TrainedModel, search_space: dict, n=500, max_evals=50) -> tuple[list[str], list[Path], Path]:
     basins = []
     sweeps = []
-    run_dir = generate_run_directory(base_model_id=model.config_id, type_of_run=sweep)
+    run_dir = generate_run_directory(base_model_id=model.config_id, type_of_run='sweeps')
     
     for _ in range(n):
         # pick basin
