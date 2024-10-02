@@ -85,9 +85,11 @@ def find_best_finetuning_params(search_space: dict, model: TrainedModel, max_eva
     best_params = fmin(finetune_model, space=search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
     # add basin back to best params    
     # add basin back to best params
-    finetuned_model_cfg = trials.best_trial['result']['model'].cfg._cfg
-    finetuning_data = finetune_model_from_cfg(data=finetuned_model_cfg, basin=search_space['basin'])
+     # run best model to get that fresh validation data
+    best_args = param_dict_from_model_output(best_params, search_space['basin'])
+    finetuning_data = finetune_model(best_args)
     finetuned_model = finetuning_data['model']
+
 
     # store model, finetuned model, and best_params
     sweep = Sweep(best_params=best_params, base_model=model, 
