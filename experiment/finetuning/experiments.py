@@ -191,5 +191,5 @@ if __name__ == '__main__':
     # sanity check on the finetuned validation losses
     
     # get sweeps
-    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20_3'
+    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20_5'
     run_all_experiments(run_dir=run_dir)

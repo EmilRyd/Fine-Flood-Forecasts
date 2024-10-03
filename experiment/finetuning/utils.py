@@ -20,7 +20,7 @@ def param_dict_from_model_output(best_params: dict, basin: str):
     args = {}
     args['basin'] = basin
     args['epochs'] = int(best_params['epochs'])
-    args['learning_rate'] = {0: float(best_params['lr1']), 5: float(best_params['lr2'])}
+    args['learning_rate'] = {0: float(best_params['lr1']), 30: float(best_params['lr2'])}
     args['loss'] = LOSSES[best_params['loss']]
     args['lstm'] = best_params['lstm']
     return args
