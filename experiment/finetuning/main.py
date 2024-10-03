@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # define hyperparameter search space
     search_space = {
         'epochs': hp.quniform('epochs', 1, 100, 1),
-        'learning_rate': {0: hp.uniform('lr1', 1e-5, 5e-5), 5: hp.uniform('lr2', 1e-6, 1e-5)},
+        'learning_rate': {0: hp.uniform('lr1', 1e-5, 5e-5), 30: hp.uniform('lr2', 1e-6, 1e-5)},
         'lstm': hp.choice('lstm', [False, True]),
         'loss': hp.choice('loss', LOSSES)
     }
