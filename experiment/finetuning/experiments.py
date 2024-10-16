@@ -59,7 +59,8 @@ def performance_comparison_for_basin(sweep: Sweep):
     fine_test_score = float(fine_test.iloc[0][f'basin_{sweep.basin}'])
     base_test_score = float(base_test.iloc[0][f'{sweep.base_model.config_id}'])
     test_delta_all = fine_test_score - base_test_score
-    
+    if test_delta_all > 0:
+        print(test_delta_all)
     # for individual basin
 
     # validation
@@ -78,11 +79,11 @@ def performance_comparison(sweeps: list):
     for sweep in sweeps:
         deltas = performance_comparison_for_basin(sweep)
         for key, value in delta_dict.items():
-            
-            delta_dict[key] = value + [deltas[key]]
+            if not deltas[key] > 1000:
+                delta_dict[key] = value + [deltas[key]]
     for key, value in delta_dict.items():
-        plt.xlim(left=-0.06, right=0.06)
-        plt.hist(value, bins=100)
+        
+        plt.hist(value)
         ave = np.mean(value)
         median = np.median(value)
         std = np.std(value)
@@ -93,14 +94,16 @@ def get_loss_ratios(model: TrainedModel) -> pd.Series:
 
      # maybe this should go into a more general utils file?
     train_df, val_df = get_training_losses(model)
+    if not val_df.empty:
+        val_df.rename(columns={'value': 'val'}, inplace=True)
+        train_df.rename(columns={'value': 'train'}, inplace=True)
 
-    val_df.rename(columns={'value': 'val'}, inplace=True)
-    train_df.rename(columns={'value': 'train'}, inplace=True)
-
-    ratio_df = pd.merge(left=train_df, right=val_df, on='step')
-    ratios = ratio_df.val/ratio_df.train
-    ratios = ratios.set_axis(ratio_df['step'])
-    return ratios
+        ratio_df = pd.merge(left=train_df, right=val_df, on='step')
+        ratios = ratio_df.val/ratio_df.train
+        ratios = ratios.set_axis(ratio_df['step'])
+        return ratios
+    else:
+        return pd.DataFrame()
 
 def loss_ratio_comparison(sweeps: list, use_base=False):
     # compare the loss ratio of the base model with the loss ratios from the finetuning
@@ -120,12 +123,13 @@ def loss_ratio_comparison(sweeps: list, use_base=False):
         fine_ratio_series = get_loss_ratios(sweep.finetuned_model)
         
         # shift by the base_model number of epochs
-        fine_ratio_series.loc[0] = base_ratios.loc[len(base_ratios)-1]
+        if not fine_ratio_series.empty:
+            fine_ratio_series.loc[0] = base_ratios.loc[len(base_ratios)-1]
 
-        fine_ratio_series.index = fine_ratio_series.index + base_ratios.index.max()
-        fine_ratio_series = fine_ratio_series.sort_index()
-        fine_ratios = pd.concat([fine_ratios, fine_ratio_series], axis=1)
-        plt.plot(fine_ratio_series.index, fine_ratio_series, alpha=0.2, c='k')
+            fine_ratio_series.index = fine_ratio_series.index + base_ratios.index.max()
+            fine_ratio_series = fine_ratio_series.sort_index()
+            fine_ratios = pd.concat([fine_ratios, fine_ratio_series], axis=1)
+            plt.plot(fine_ratio_series.index, fine_ratio_series, alpha=0.2, c='k')
 
     ave_ratios = fine_ratios.mean(axis=1).sort_index()
     plt.plot(ave_ratios.index, ave_ratios, label='average of finetuned models', c='r')
@@ -191,5 +195,5 @@ if __name__ == '__main__':
     # sanity check on the finetuned validation losses
     
     # get sweeps
-    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20_5'
+    run_dir = Path(__file__).parent / 'sweeps' / 'sota_20'
     run_all_experiments(run_dir=run_dir)

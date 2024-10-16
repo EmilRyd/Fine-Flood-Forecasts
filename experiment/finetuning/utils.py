@@ -82,10 +82,13 @@ def get_training_losses(model: TrainedModel) -> tuple:
 
     # access the losses
     t_loss_data = ea.Scalars('train/avg_loss')
-    v_loss_data = ea.Scalars('valid/avg_loss')
-
     train_df = pd.DataFrame(t_loss_data)
-    val_df = pd.DataFrame(v_loss_data)
+
+    if 'valid/avg_loss' in ea.scalars.Keys():
+        v_loss_data = ea.Scalars('valid/avg_loss')
+        val_df = pd.DataFrame(v_loss_data)
+    else:
+        val_df = pd.DataFrame()
 
     return train_df, val_df
 
