@@ -1,5 +1,10 @@
+# folders
 data/
 output/
 temp/
 __pycache__/
 pretrained_models/
+
+# file types
+*.png
+*.DS_Store

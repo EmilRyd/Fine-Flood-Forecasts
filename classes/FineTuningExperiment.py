@@ -156,7 +156,11 @@ class FineTuningExperiment:
             
 
         # TODO check this file
-        basin_dir = Path(data['run_dir']) / data['experiment_name']
+        basin_dirs = [folder for folder in Path(data['run_dir']).iterdir() if folder.is_dir() and folder.name.startswith(data['experiment_name'])]
+        assert len(basin_dirs) == 1, f'More than one model found for this basin ({self.basin}) at this evlaution number ({self.experiment_counter-1}). Make sure you remove any old runs, or start one with a new name.'
+        basin_dir = basin_dirs[0]
+
+        
         config_file_path = basin_dir / 'config.yml'
 
         trained_model = TrainedModel(config_file_path_or_experiment_name=config_file_path)

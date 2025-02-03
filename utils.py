@@ -8,7 +8,6 @@ import pickle as p
 import random
 import re
 from datetime import timedelta
-from strenum import StrEnum
 
 import pandas as pd
 import numpy as np
@@ -39,7 +38,7 @@ NUM_BASINS = {'camels_us': 531, 'caravan': 6375}
 # functions
 
 
-def load_cuda_model(config_file: Path, run_dir: Path, epoch: int=30) -> (CudaLSTM, Config):
+def load_cuda_model(config_file: Path, run_dir: Path, epoch: int=30) -> tuple[CudaLSTM, Config]:
 
     """Loads cuda model from config file and run directory, returns tuple of model and config object"""
     

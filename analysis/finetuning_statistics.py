@@ -147,7 +147,7 @@ class FinetuningStatistics:
                 plt.hist(no_outliers_data, bins=50)
                 
                 nicename: str = col.split('_')[0] + ' set change'
-                plt.xlabel(f'Pre-trained {metric}')
-                plt.ylabel(f'Change from fine-tuning in {metric}')
+                plt.xlabel(f'Change from fine-tuning in {metric}')
+                plt.ylabel(f'Number of basins')
                 plt.title(f'{nicename} in {metric}: average: {ave:.3f} +- {std:.3f}, median: {median:.3f}')
                 plt.show()

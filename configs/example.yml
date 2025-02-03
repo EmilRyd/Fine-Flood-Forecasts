@@ -31,3 +31,4 @@ search_space:
     - false
     - true
 validate_every: 5
+device: cuda:0
