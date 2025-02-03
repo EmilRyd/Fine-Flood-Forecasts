@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 import torch
 from hyperopt import Trials
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, snapshot_download
 import torch
 
 from neuralhydrology.modelzoo.cudalstm import CudaLSTM
@@ -30,6 +30,7 @@ HIDDEN_SIZES = [8, 16, 32]
 
 TEMP_DIR: Path = Path(__file__).parent / 'scripts' / 'temp'
 OUTPUT_DIR = Path(__file__).parent / 'output'
+MODEL_DIR = Path(__file__).parent / 'pretrained_models'
 EPOCH_SWITCH = 20
 #SINGLE_BASIN_TRAIN_DIR = Path(os.getenv('DATA')) / 'single_basin_train'
 
@@ -264,22 +265,24 @@ def filter_outliers(value):
     return no_outliers_data
 
 def load_hf_model():
-    # Download model from Hugging Face
-    model_path = hf_hub_download(
-        repo_id='EmilRyd/caravan_model', 
-        filename='model_epoch040.pt'
-    )
 
-    model_config = hf_hub_download(
-        repo_id='EmilRyd/caravan_model', 
-        filename='config.yml'
-    )
+   
+    # prepare directory for download
+    os.makedirs(MODEL_DIR, exist_ok=True)
 
-    # Load the model
-    cfg = Config(model_config)
-    base_model = CudaLSTM(cfg=model_config)
-    model_weights = torch.load(model_path)
-    base_model.load_state_dict(model_weights)
+    # download from hugging face
+    print('Loading model from Hugging Face...')
+    snapshot_download(
+        repo_id='EmilRyd/caravan_model', 
+        allow_patterns='caravan_base/*',
+        local_dir=MODEL_DIR,
+        repo_type='model'
+    )    
+    # turn into TrainedModel
+    base_model = TrainedModel(MODEL_DIR / 'caravan_base' / 'config.yml')
+    print('Model loaded and saved.')
+
+
     return base_model
 
 # classes

@@ -1,5 +1,5 @@
-base_model_path: /home/admin/Fine-Flood-Forecasts/runs/all_data_caravan_one_layer_2
-basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/500_caravan_basins.txt
+base_model_path: /home/admin/Fine-Flood-Forecasts-Public/pretrained_models/caravan_base
+basin_file: /home/admin/Fine-Flood-Forecasts-Public/assets/basins.txt # TODO fix paths
 experiment_name: example
 max_evals: 2
 metrics:

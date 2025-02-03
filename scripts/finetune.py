@@ -19,7 +19,7 @@ def finetuner(config):
     fe = FineTuningExperiment(experiment_args=finetuning_args)
 
     # run finetuning
-    fe.run()
+    fe.run(retrain=True)
 
 if __name__ == '__main__':
 

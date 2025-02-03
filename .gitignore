@@ -2,3 +2,4 @@ data/
 output/
 temp/
 __pycache__/
+pretrained_models/

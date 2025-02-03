@@ -2,6 +2,7 @@
 import yaml
 from pathlib import Path
 import os
+import shutil
 import tempfile
 
 from hyperopt import fmin, Trials, tpe, STATUS_OK
@@ -30,6 +31,7 @@ class FineTuningExperiment:
             self.output_dir = OUTPUT_DIR
             os.makedirs(self.output_dir, exist_ok=True)
         self.experiment_dir = self.output_dir / self.experiment_name
+        self.best_models_dir = self.experiment_dir / 'finetuned_models'
 
         self.basin_file = Path(experiment_args.basin_file)
         self.basins = read_txt_to_list(self.basin_file)
@@ -37,6 +39,7 @@ class FineTuningExperiment:
         assert self.basins, 'No basins found in basin file'
 
         self.basin = self.basins[0]
+        print(self.basins)
         self.max_evals = experiment_args.max_evals
         
        
@@ -72,22 +75,24 @@ class FineTuningExperiment:
         self.sweep_dir = self.experiment_dir / 'sweeps'
 
         
-    def run(self) -> tuple[list[Path], Path]:
+    def run(self, retrain=False) -> tuple[list[Path], Path]:
         ''' run a finetuning search on all untouched (not already finetuned) basins in the experiment '''
-                
+
+        
         if os.path.exists(self.sweep_dir):
             LOGGER.info(f'Experiment {self.experiment_name} already exists, values may be overridden')
         os.makedirs(self.sweep_dir, exist_ok=True)
         os.makedirs(self.run_dir, exist_ok=True)
-        
+        os.makedirs(self.best_models_dir, exist_ok=True)
         # check basins that already have a trained model
         trained_basins = [f.name for f in self.run_dir.iterdir() if f.is_dir() and len(os.listdir(f)) == self.max_evals + 1]
         os.makedirs(TEMP_DIR, exist_ok=True)
+        
         for basin in self.basins:
-            if not basin in trained_basins:
+            if not basin in trained_basins or retrain:
                 self.experiment_counter = 0
                 self.basin = basin
-                self.update_files(basin=basin)
+                self.update_files()
 
                 # finetune a model
                 try:  
@@ -100,16 +105,19 @@ class FineTuningExperiment:
                 except AllTrialsFailed:
                     LOGGER.warning(f'All trials failed for basin {basin}')
 
+        if set(self.basins).issubset(set(trained_basins)) and not retrain:
+            print('All basins already trained, set retrain=True to retrain')
         # clean up
-        os.remove(TEMP_DIR)
+        shutil.rmtree(TEMP_DIR)
 
         return self.sweeps, self.sweep_dir
 
-    def update_files(self, basin):
+    def update_files(self, best_model=False):
 
-        basin_dir = self.basin_run_dir / f'{basin}' # think this is the right path, not verified
-        if not os.path.exists(basin_dir):
-            os.makedirs(basin_dir, exist_ok=True) # if not even any general run dir
+        basin_dir = self.basin_run_dir / f'{self.basin}' # think this is the right path, not verified
+        
+        os.makedirs(basin_dir, exist_ok=True) # if not even any general run dir
+
 
         # TODO implement this so that instead of a base finetune file, data is just loaded here from the args
         '''# Load the existing YAML data
@@ -119,17 +127,22 @@ class FineTuningExperiment:
         # create a temporary basin file in TEMP dir
         basin_file_path = TEMP_DIR / f'basin.txt'
         with open(basin_file_path, 'w') as fp:
-            fp.write(basin)
+            fp.write(self.basin)
         
         #basin_file_path = get_basin_file(basin)
         self.finetune_config['train_basin_file'] = str(basin_file_path.absolute())
         self.finetune_config['validation_basin_file'] = str(basin_file_path.absolute())
         self.finetune_config['test_basin_file'] = str(basin_file_path.absolute())
-        self.finetune_config['run_dir'] = str(basin_dir.absolute()) 
+
+        if best_model:
+            self.finetune_config['run_dir'] = str(self.best_models_dir.absolute()) 
+        else:
+            self.finetune_config['run_dir'] = str(basin_dir.absolute()) 
 
         # Create a basin file with the basin we selected above
         with open(basin_file_path, 'w') as fp:
-            fp.write(basin)
+            fp.write(self.basin)
+        
     def param_dict_from_model_output(self, best_params: dict) -> dict:
         # TODO this should be in the dataclass I think
 
@@ -157,7 +170,7 @@ class FineTuningExperiment:
    
         return data
 
-    def train_model_from_cfg(self, data: dict):
+    def train_model_from_cfg(self, data: dict, best_model):
         # finetune using temporary yaml file
         
         with tempfile.NamedTemporaryFile(delete=True, dir=TEMP_DIR, suffix='.yml', mode='w') as f:
@@ -172,9 +185,9 @@ class FineTuningExperiment:
             
 
         # TODO check this file
-        basin_dir = self.basin_run_dir/ f'{self.basin}' / f'{self.experiment_counter-1}'
+        basin_dir = Path(data['run_dir']) / data['experiment_name']
         config_file_path = basin_dir / 'config.yml'
-        
+
         trained_model = TrainedModel(config_file_path_or_experiment_name=config_file_path)
 
         # find eval score
@@ -187,12 +200,15 @@ class FineTuningExperiment:
         # return negative validation score
         return {'loss': -float(v_df[data['loss']].values[0]), 'status': STATUS_OK, 'model': trained_model}
 
-    def train_model(self, args):
+    def train_model(self, args, best_model=False):
         # will be redefined in child class
         data = self.cfg_from_args(args)
-        data['experiment_name'] = f'{self.experiment_counter}'  # Example modification
+        if best_model:
+            data['experiment_name'] = f'{self.basin}'  
+        else:
+            data['experiment_name'] = f'{self.experiment_counter}'  
         self.experiment_counter += 1
-        score = self.train_model_from_cfg(data=data)
+        score = self.train_model_from_cfg(data=data, best_model=best_model)
         return score
     
     def find_best_params(self) -> Sweep:
@@ -204,7 +220,11 @@ class FineTuningExperiment:
         # add basin back to best params    
         # run best model to get that fresh validation data
         best_args = self.search_space.param_dict_from_model_output(best_params)
-        training_data = self.train_model(best_args)
+
+        # update the files to be for best model
+        self.update_files(best_model=True)
+ 
+        training_data = self.train_model(best_args, best_model=True)
         trained_model = training_data['model']
 
 
