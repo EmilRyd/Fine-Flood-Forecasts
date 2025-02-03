@@ -70,6 +70,7 @@ class FineTuningExperiment:
         self.finetune_config['base_run_dir'] = str(self.base_model.run_dir.absolute()) # set base run dir, where the pre-trained model is stored
         self.finetune_config['num_workers'] = experiment_args.num_workers
         self.finetune_config['metrics'] = experiment_args.metrics
+        self.finetune_config['device'] = experiment_args.device
         self.finetune_config['validate_every'] = None
 
         self.sweep_dir = self.experiment_dir / 'sweeps'
@@ -139,33 +140,6 @@ class FineTuningExperiment:
         # Create a basin file with the basin we selected above
         with open(basin_file_path, 'w') as fp:
             fp.write(self.basin)
-        
-    def param_dict_from_model_output(self, best_params: dict) -> dict:
-        # TODO this should be in the dataclass I think
-
-        args = {}
-        args['epochs'] = int(best_params['epochs'])
-        args['learning_rate'] = {0: float(best_params['lr1']), EPOCH_SWITCH: float(best_params['lr2'])}
-        args['loss'] = LOSSES[best_params['loss']]
-        args['lstm'] = best_params['lstm']
-        return args 
-    
-
-    def cfg_from_args(self, args) -> dict:
-        
-        # set dict parameters based on config dictionary passed to function
-        
-        data = {}
-        modules = ['head'] 
-        if args['lstm']:
-            modules.append('lstm')
-        data['epochs'] = int(args['epochs'])
-        data['learning_rate'] = args['learning_rate']
-        data['loss'] = args['loss']
-        data['finetune_modules'] = modules
-        data['save_weights_every'] = int(args['epochs'])
-   
-        return data
 
     def train_model_from_cfg(self, data: dict):
         # finetune using temporary yaml file
@@ -199,7 +173,7 @@ class FineTuningExperiment:
 
     def train_model(self, args, best_model=False):
         # will be redefined in child class
-        data = self.cfg_from_args(args)
+        data = self.search_space.cfg_from_args(args)
         if best_model:
             data['experiment_name'] = f'{self.basin}'  
         else:

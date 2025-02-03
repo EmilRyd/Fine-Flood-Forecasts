@@ -26,6 +26,7 @@ class FineTuningArgs:
     num_workers: int = 1
     validate_every: int = 5
     metrics: list[str] = field(default_factory=get_available_metrics())
+    device: int = 'cpu'
 
     @classmethod
     def from_yaml(cls, file_path: str) -> 'FineTuningArgs':

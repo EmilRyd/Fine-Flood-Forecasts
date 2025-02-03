@@ -20,7 +20,7 @@ import torch
 from neuralhydrology.modelzoo.cudalstm import CudaLSTM
 from neuralhydrology.modelzoo.customlstm import CustomLSTM
 from neuralhydrology.utils.config import Config
-
+from neuralhydrology.nh_run import eval_run
 
 # constants
 LOSSES = ['NSE', 'MSE', 'RMSE']
@@ -354,7 +354,12 @@ class TrainedModel:
     def get_eval_metrics(self, basins: list = None, period: str='test') -> pd.DataFrame:
 
         metrics_file = self.get_eval_metrics_file(period=period)
-        assert os.path.exists(metrics_file), f'Metrics file {metrics_file} does not exist'
+        if not os.path.exists(metrics_file):
+            print(f'Metrics file {metrics_file} does not exist, running evaluation now...')
+            if torch.cuda.is_available():
+                eval_run(self.run_dir, period=period, epoch=self.epoch)
+            else:
+                eval_run(self.run_dir, period=period, epoch=self.epoch, gpu=-1)
         
         df = pd.read_csv(metrics_file)
 

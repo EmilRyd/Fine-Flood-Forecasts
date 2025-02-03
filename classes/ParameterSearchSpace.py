@@ -33,6 +33,29 @@ class ParameterSearchSpace:
 
         return args
 
+    def cfg_from_args(self, args) -> dict:
+        
+        # set dict parameters based on config dictionary passed to function
+        data = {}
+        for key in args.keys():
+            match key:
+                case 'epochs':
+                    data['epochs'] = int(args['epochs'])
+                    data['save_weights_every'] = int(args['epochs'])
+                case 'learning_rate':
+                    data['learning_rate'] = args['learning_rate']
+                case 'loss':
+                    data['loss'] = args['loss']
+                case 'lstm':
+                    modules = ['head'] 
+                    if args['lstm']:
+                        modules.append('lstm')
+                    data['finetune_modules'] = modules
+                case _:
+                    pass
+        
+        return data
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ParameterSearchSpace':
         # Convert the dictionary to Hyperopt search space objects
