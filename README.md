@@ -59,4 +59,4 @@ When you are done fine-tuning, you can analyze your results by running the ```an
 In the steps described above, you are limited to fine-tuning on the 22,732 basins that are already in the Caravan dataset. If you have your own basins (with accompanying catchment delineations and streamflow data), you can format them to fit into the Caravan dataset by following the tutorials here. You can then either contribute them to the Caravan dataset itself (it's very easy), or you can just keep them as a local copy without having to publicize your data. Either way, you can then add your basin ids into the basins.txt file just as any other basin in Caravan, and then run the same fine-tuning procedure as above. Voilà!
 
 ## Questions/problems
-If you have any comments or problems with the repository, feel free to open an issue! You can also reach me at emil.ryd@new.ox.ac.uk.
+If you have any comments or problems with the repository, feel free to open an issue!
