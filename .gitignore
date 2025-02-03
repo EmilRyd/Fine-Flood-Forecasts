@@ -4,6 +4,7 @@ output/
 temp/
 __pycache__/
 pretrained_models/
+.vscode/
 
 # file types
 *.png
