@@ -1,0 +1,33 @@
+base_model_path: /home/admin/Fine-Flood-Forecasts/runs/all_data_caravan_one_layer_2
+basin_file: /home/admin/Fine-Flood-Forecasts/experiment/finetuning/assets/500_caravan_basins.txt
+experiment_name: example
+max_evals: 2
+metrics:
+- NSE
+- KGE
+- MSE
+- RMSE
+num_workers: 1
+output_dir: null
+search_space:
+  epochs:
+    high: 2
+    low: 1
+    q: 1
+  learning_rate:
+    0:
+      high: 1e-3
+      low: 1e-5
+    20:
+      high: 1e-4
+      low: 1e-6
+  loss:
+    options:
+    - NSE
+    - MSE
+    - RMSE
+  lstm:
+    options:
+    - false
+    - true
+validate_every: 5
