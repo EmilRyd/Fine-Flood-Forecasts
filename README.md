@@ -30,6 +30,11 @@ To activate your environment (necessary for next step), run:
 conda activate finetuning
 ```
 
+Finally, you will likely also need to run (again, in the workspace folder):
+```
+export PYTHONPATH=.
+```
+
 ### 3. Fine-tune a pre-trained model on your basins
 To fine-tune a pre-trained model on the basins of your choosing. Run:
 ```
