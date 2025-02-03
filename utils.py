@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 import torch
 from hyperopt import Trials
-from huggingface_hub import hf_hub_download, snapshot_download
+from huggingface_hub import snapshot_download
 import torch
 
 from neuralhydrology.modelzoo.cudalstm import CudaLSTM
@@ -286,7 +286,7 @@ def load_hf_model():
     return base_model
 
 # classes
-class Sweep:
+'''class Sweep:
 
     def __init__(self, best_params: dict, base_model: TrainedModel, finetuned_model: TrainedModel, search_space: dict, max_evals: int, trials: Trials):
 
@@ -299,11 +299,11 @@ class Sweep:
         self.trials = trials
 
     def save(self, run_dir: Path) -> Path:
-        unique_filename = make_unique(run_dir / f'{self.basin}.pkl')
-        with open(unique_filename, 'wb') as f:
+        filename = run_dir / f'{self.basin}.pkl'
+        with open(filename, 'wb') as f:
             p.dump(self, f)
-        return Path(unique_filename)
-    
+        return Path(filename)
+    '''
 class TrainingExperimentResults:
 
     def __init__(self, best_params: dict, final_model: TrainedModel, search_space: dict, max_evals: int, trials: Trials, basin: str, base_model=None):
@@ -317,10 +317,10 @@ class TrainingExperimentResults:
         self.trials = trials
 
     def save(self, run_dir: Path) -> Path:
-        unique_filename = make_unique(run_dir / f'{self.basin}.pkl')
-        with open(unique_filename, 'wb') as f:
+        filename = run_dir / f'{self.basin}.pkl'
+        with open(filename, 'wb') as f:
             p.dump(self, f)
-        return Path(unique_filename)
+        return Path(filename)
 
 class TrainedModel:
 
@@ -348,8 +348,23 @@ class TrainedModel:
         return Path(__file__).parent / 'models' / 'runs' / experiment_name / 'config.yml'
 
     def get_eval_metrics_file(self, period: str='test') -> Path:
-        epoch_string = get_epoch_string(self.epoch)
+        epoch_string = get_epoch_string(self.epoch) 
         return (self.run_dir / period / f'model_epoch{epoch_string}' / f'{period}_metrics.csv') 
+    
+    def get_eval_metrics(self, basins: list = None, period: str='test') -> pd.DataFrame:
+
+        metrics_file = self.get_eval_metrics_file(period=period)
+        assert os.path.exists(metrics_file), f'Metrics file {metrics_file} does not exist'
+        
+        df = pd.read_csv(metrics_file)
+
+
+        if basins:
+            assert sum(df.basin.isin(basins)) == len(basins), 'Basin column not in metrics file'
+            return df[df['basin'].isin(basins)]
+        else:
+            return df
+         
 
     def to_dict(self) -> dict:
         return {
@@ -359,13 +374,3 @@ class TrainedModel:
             'basin': self.basin,
             'search_space': self.search_space
         }
-class TrainedModelID(StrEnum):
-    EMB_20 = 'embedding_experiment_20'
-    EMB_10 = 'embedding_experiment_10'
-    SOTA_10 = 'sota_10'
-    SOTA_20 = 'sota_20'
-    SOTA = 'sota'
-    CARAVAN_1 = 'all_data_caravan_one_layer_2'
-    # TODO write code so that caravan model can be fetched as a traind model
-
-

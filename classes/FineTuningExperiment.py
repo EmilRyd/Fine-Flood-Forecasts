@@ -13,7 +13,7 @@ from neuralhydrology.nh_run import finetune, eval_run
 from neuralhydrology.training import LOGGER
 from neuralhydrology.utils.errors import NoTrainDataError
 
-from utils import EPOCH_SWITCH, LOSSES, TrainedModel, get_epoch_string, read_txt_to_list, TEMP_DIR, Sweep, TrainingExperimentResults, OUTPUT_DIR, load_hf_model
+from utils import EPOCH_SWITCH, LOSSES, TrainedModel, get_epoch_string, read_txt_to_list, TEMP_DIR, TrainingExperimentResults, OUTPUT_DIR, load_hf_model
 from .FineTuningArgs import FineTuningArgs
 
 class FineTuningExperiment:
@@ -110,9 +110,10 @@ class FineTuningExperiment:
         # clean up
         shutil.rmtree(TEMP_DIR)
 
+        print(f'All {len(self.basins)} basins finetuned, finetuned models stored in {self.best_models_dir}')
         return self.sweeps, self.sweep_dir
 
-    def update_files(self, best_model=False):
+    def update_files(self):
 
         basin_dir = self.basin_run_dir / f'{self.basin}' # think this is the right path, not verified
         
@@ -133,11 +134,7 @@ class FineTuningExperiment:
         self.finetune_config['train_basin_file'] = str(basin_file_path.absolute())
         self.finetune_config['validation_basin_file'] = str(basin_file_path.absolute())
         self.finetune_config['test_basin_file'] = str(basin_file_path.absolute())
-
-        if best_model:
-            self.finetune_config['run_dir'] = str(self.best_models_dir.absolute()) 
-        else:
-            self.finetune_config['run_dir'] = str(basin_dir.absolute()) 
+        self.finetune_config['run_dir'] = str(basin_dir.absolute()) 
 
         # Create a basin file with the basin we selected above
         with open(basin_file_path, 'w') as fp:
@@ -170,7 +167,7 @@ class FineTuningExperiment:
    
         return data
 
-    def train_model_from_cfg(self, data: dict, best_model):
+    def train_model_from_cfg(self, data: dict):
         # finetune using temporary yaml file
         
         with tempfile.NamedTemporaryFile(delete=True, dir=TEMP_DIR, suffix='.yml', mode='w') as f:
@@ -208,10 +205,10 @@ class FineTuningExperiment:
         else:
             data['experiment_name'] = f'{self.experiment_counter}'  
         self.experiment_counter += 1
-        score = self.train_model_from_cfg(data=data, best_model=best_model)
+        score = self.train_model_from_cfg(data=data)
         return score
     
-    def find_best_params(self) -> Sweep:
+    def find_best_params(self) -> TrainingExperimentResults:
     
         trials = Trials()
     
@@ -222,11 +219,10 @@ class FineTuningExperiment:
         best_args = self.search_space.param_dict_from_model_output(best_params)
 
         # update the files to be for best model
-        self.update_files(best_model=True)
- 
+        self.finetune_config['run_dir'] = str(self.best_models_dir.absolute())
+        
         training_data = self.train_model(best_args, best_model=True)
         trained_model = training_data['model']
-
 
         # store model, finetuned model, and best_params
         sweep = TrainingExperimentResults(best_params=best_params, base_model=self.base_model,
