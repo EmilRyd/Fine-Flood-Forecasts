@@ -24,7 +24,6 @@ def finetuner(config):
 if __name__ == '__main__':
 
     # define args
-    # TODO implement this as args here
     parser = argparse.ArgumentParser(description="getting args for the experiment")
 
     parser.add_argument('config', type=str)
@@ -33,8 +32,4 @@ if __name__ == '__main__':
     
     config_file = args.config
     
-    # replace the base model path in the config file
-    '''finetuning_args = FineTuningArgs.from_yaml(config_file)
-    finetuning_args.save(config_file)'''
-
     finetuner(config_file)
